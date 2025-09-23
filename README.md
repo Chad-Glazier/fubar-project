@@ -1,6 +1,6 @@
 # FUBAR Project
 
-Under construction.
+frank was here 
 
 Modifying the readMe file 
 
