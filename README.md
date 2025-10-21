@@ -59,14 +59,8 @@ them. For an example, see [this file](back-end/models/util/test_BaseModelWithCSV
 
 In the `back-end/models` part:
 
-- The `save` function can be generalized up to the `BaseModelWithCSV` class (which 
-should probably also be given a more appropriate name).
-- We need a mutex to prevent concurrent writing. Since each class has its own table, 
-there should be an independent mutex for each class. I.e., a static field. However,
-I'm not sure if python has real static members anyway; it might instead be necessary 
-to look into existing mutex libraries.
-- After those changes, need to write more tests in `test_BaseModelWithCSV.py`
-- Then we need to be able to retrieve model instances from the CSV files.
+- implement search functionality for models; i.e., implement `get_by` and 
+`get_first`.
 
 Later:
 - After the models are sorted out, we can start implementing request handlers to
