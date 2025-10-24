@@ -57,11 +57,4 @@ them. For an example, see [this file](back-end/models/util/test_BaseModelWithCSV
 
 ## To Do
 
-In the `back-end/models` part:
 
-- implement search functionality for models; i.e., implement `get_by` and 
-`get_first`.
-
-Later:
-- After the models are sorted out, we can start implementing request handlers to
-interact with the "database."

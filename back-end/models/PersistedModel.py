@@ -1,13 +1,12 @@
 from io import TextIOWrapper
 from pydantic import BaseModel
 from pathlib import Path
-from typing import ClassVar, Self
+from typing import ClassVar, Generator, Self
 from threading import Lock
 import os
 import tempfile
 
-from encode_str import encode_str, decode_str
-
+from models._encode_str import _encode_str, _decode_str
 
 class PersistedModel(BaseModel):
 	"""
@@ -24,7 +23,7 @@ class PersistedModel(BaseModel):
 	def to_csv_row(self) -> str:
 		row: str = ""
 		for value in self.model_dump().values():
-			row += encode_str(str(value)) + ","
+			row += _encode_str(str(value)) + ","
 		return row[:-1]
 	
 	def put(self, data_dir: str = "./data") -> None:
@@ -36,7 +35,7 @@ class PersistedModel(BaseModel):
 
 		primary_key = str(self.primary_key())
 
-		line = original_file.readline()
+		line = original_file.readline() 
 		while line != "":
 			if line.startswith(primary_key):
 				prev_record_found = True
@@ -63,7 +62,7 @@ class PersistedModel(BaseModel):
 
 		primary_key = str(self.primary_key())
 
-		line = original_file.readline()
+		line = original_file.readline() 
 		while line != "":
 			if not line.startswith(primary_key):
 				updated_file.write(line)
@@ -107,7 +106,7 @@ class PersistedModel(BaseModel):
 		i = 0
 		for key, value in zip(keys, values):
 			if cls.model_fields[key].annotation is str:
-				value = decode_str(value)
+				value = _decode_str(value)
 			fields[key] = value
 		return cls.model_validate(fields)
 	
@@ -122,26 +121,68 @@ class PersistedModel(BaseModel):
 	def get_by_primary_key(cls, search_key: any, data_dir: str = "./data") -> Self | None:
 		key_str = str(search_key)
 
-		r = cls.read_csv_file(data_dir = data_dir)
-		line = r.readline()
-		while line != "":
-			if line.startswith(key_str):
-				return cls.from_csv_row(line)
+		with cls.read_csv_file(data_dir = data_dir) as r:
+			r.readline() # skip the header
 			line = r.readline()
+			while line != "":
+				if line.startswith(key_str):
+					return cls.from_csv_row(line)
+				line = r.readline()
 
 		return None
 
 	@classmethod
-	def get_by(**search_fields) -> list[Self]:
-		# need to handle the case where there are no search params;
-		# the results could be massive. return a generator instead.
+	def get_where(cls, data_dir = "./data", **search_fields) -> Generator[Self, None, None]:
+		search_values: str = [] 
+		for field in cls.model_fields.keys():
+			if field in search_fields:
+				search_values.append(_encode_str(str(search_fields[field])))
+			else:
+				search_values.append(None)
 		
-		# Can start by finding the indices of the fields that are being
-		# searched; i.e., if the second and fifth columns are being searched,
-		# we should figure that out and then only perform comparisons on
-		# those columns when searching.
-		
-		pass
+		with cls.read_csv_file(data_dir = data_dir) as r:
+			r.readline() # skip the header
+			line = r.readline()
+			while line != "":
+				values: list[str] = line.\
+					removesuffix("\n").\
+					split(",")
+				match_found = True
+				for i in range(len(values)):
+					if search_values[i] == None:
+						continue
+					if search_values[i] != values[i]:
+						match_found = False
+						break
+				if match_found:
+					yield cls.from_csv_row(line)
+				line = r.readline()
 
-	def get_first(**search_fields) -> Self | None:
-		pass
+	@classmethod
+	def get_first_where(cls, data_dir = "./data", **search_fields) -> Self | None:
+		search_values: str = [] 
+		for field in cls.model_fields.keys():
+			if field in search_fields:
+				search_values.append(_encode_str(str(search_fields[field])))
+			else:
+				search_values.append(None)
+		
+		with cls.read_csv_file(data_dir = data_dir) as r:
+			r.readline() # skip the header
+			line = r.readline()
+			while line != "":
+				values: list[str] = line.\
+					removesuffix("\n").\
+					split(",")
+				match_found = True
+				for i in range(len(values)):
+					if search_values[i] == None:
+						continue
+					if search_values[i] != values[i]:
+						match_found = False
+						break
+				if match_found:
+					return cls.from_csv_row(line)
+				line = r.readline()
+
+		return None

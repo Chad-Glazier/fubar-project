@@ -1,10 +1,11 @@
-from PersistedModel import PersistedModel
+from models.PersistedModel import PersistedModel
 
 class RandomModel(PersistedModel):
 	pk: int
 	field_1: str
 	field_2: int
 
+RandomModel.drop_table()
 
 def test_to_csv_header():
 	assert RandomModel.to_csv_header() == "pk,field_1,field_2"
@@ -123,5 +124,72 @@ def test_delete():
 
 	assert RandomModel.get_by_primary_key(1) == None
 	assert RandomModel.get_by_primary_key(2) != None
+
+	RandomModel.drop_table()
+
+def test_get_first_where():
+	instances = [
+		RandomModel(pk = 1, field_1 = "orange", field_2 = 1234),
+		RandomModel(pk = 2, field_1 = "papaya", field_2 = 1234),
+		RandomModel(pk = 3, field_1 = "apple", field_2 = 12345),
+		RandomModel(pk = 4, field_1 = "banana", field_2 = 123456),
+		RandomModel(pk = 5, field_1 = "peach,nectarine", field_2 = 1234567),
+	]
+	for instance in instances:
+		instance.put()
+
+	found = RandomModel.get_first_where(pk = -1)
+	assert found == None
+
+	found = RandomModel.get_first_where(pk = 1)
+	assert found != None
+	assert found.field_1 == "orange"
+	assert found.field_2 == 1234
+
+	found = RandomModel.get_first_where(field_2 = 1234)
+	assert found != None
+	assert found.pk == 1
+	assert found.field_1 == "orange"
+
+	found = RandomModel.get_first_where(pk = 1, field_1 = "peach,nectarine")
+	assert found == None
+
+	found = RandomModel.get_first_where(field_1 = "peach,nectarine", field_2 = 1234567)
+	assert found != None
+	assert found.pk == 5
+
+	RandomModel.drop_table()
+
+def test_get_where():
+	instances = [
+		RandomModel(pk = 1, field_1 = "orange", field_2 = 1234),
+		RandomModel(pk = 2, field_1 = "papaya", field_2 = 1234),
+		RandomModel(pk = 3, field_1 = "apple", field_2 = 12345),
+		RandomModel(pk = 4, field_1 = "banana", field_2 = 123456),
+		RandomModel(pk = 5, field_1 = "peach,nectarine", field_2 = 1234567),
+	]
+	for instance in instances:
+		instance.put()
+
+	retrieved_instances = []
+	for instance in RandomModel.get_where():
+		retrieved_instances.append(instance)
+
+	for (i, instance) in enumerate(retrieved_instances):
+		assert instance.pk == i + 1
+
+	retrieved_instances = []
+	for instance in RandomModel.get_where(field_2 = 1234):
+		retrieved_instances.append(instance)
+
+	assert len(retrieved_instances) == 2
+	assert retrieved_instances[0].field_1 == "orange"
+	assert retrieved_instances[1].field_1 == "papaya"
+
+	retrieved_instances = []
+	for instance in RandomModel.get_where(field_1 = "orange", field_2 = 123456):
+		retrieved_instances.append(instance)
+
+	assert len(retrieved_instances) == 0
 
 	RandomModel.drop_table()
