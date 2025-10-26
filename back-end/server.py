@@ -1,9 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from db import User
+
+from handlers import user_router
 
 app = FastAPI()
 
-@app.get("/")
-async def root():
-	return {
-		"hello": "world"
-	}
+app.include_router(user_router)

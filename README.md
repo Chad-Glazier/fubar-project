@@ -53,21 +53,8 @@ if you're testing the class you defined in `Apple.py`, then make a test file nam
 `test_Apple.py` in the same directory. Inside of such a file, you can create 
 functions that similarly start with `test_` and use `assert` statements to test 
 conditions. When you run `pytest`, it will search for such test functions and run
-them. For an example, see [this file](back-end/models/util/test_BaseModelWithCSV.py).
+them. For an example, see [this file](back-end/db/test_PersistedModel.py).
 
 ## To Do
 
-In the `back-end/models` part:
 
-- The `save` function can be generalized up to the `BaseModelWithCSV` class (which 
-should probably also be given a more appropriate name).
-- We need a mutex to prevent concurrent writing. Since each class has its own table, 
-there should be an independent mutex for each class. I.e., a static field. However,
-I'm not sure if python has real static members anyway; it might instead be necessary 
-to look into existing mutex libraries.
-- After those changes, need to write more tests in `test_BaseModelWithCSV.py`
-- Then we need to be able to retrieve model instances from the CSV files.
-
-Later:
-- After the models are sorted out, we can start implementing request handlers to
-interact with the "database."
