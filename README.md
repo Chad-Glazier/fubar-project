@@ -53,7 +53,7 @@ if you're testing the class you defined in `Apple.py`, then make a test file nam
 `test_Apple.py` in the same directory. Inside of such a file, you can create 
 functions that similarly start with `test_` and use `assert` statements to test 
 conditions. When you run `pytest`, it will search for such test functions and run
-them. For an example, see [this file](back-end/models/util/test_BaseModelWithCSV.py).
+them. For an example, see [this file](back-end/db/test_PersistedModel.py).
 
 ## To Do
 

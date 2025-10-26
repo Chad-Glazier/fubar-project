@@ -1,4 +1,4 @@
-from models._encode_str import _encode_str, _decode_str, _comma_replacement
+from db._encode_str import _encode_str, _decode_str, _comma_replacement
 
 def test_encode_str():
 	assert _encode_str("asdf,123") == f"asdf{_comma_replacement}123"

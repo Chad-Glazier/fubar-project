@@ -1,7 +1,7 @@
-from models import PersistedModel
+from db._persisted_model import _PersistedModel
 from pydantic import EmailStr, Field
 
-class User(PersistedModel):
+class User(_PersistedModel):
 	id: str
 	name: str
 	email: EmailStr
