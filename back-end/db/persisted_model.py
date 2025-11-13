@@ -6,9 +6,9 @@ from threading import Lock
 import os
 import tempfile
 
-from db._encode_str import _encode_str, _decode_str
+from db.encode_str import encode_str, decode_str
 
-class _PersistedModel(BaseModel):
+class PersistedModel(BaseModel):
 	"""
 	An extension to the Pydantic `BaseModel` class which adds a handful of 
 	functions to persist models in storage. In order to create a table in the 
@@ -37,14 +37,14 @@ class _PersistedModel(BaseModel):
 	"""
 	_mutex: ClassVar[Lock] = Lock()
 
-	def _primary_key(self) -> any:
-		primary_key_field = next(iter(self.__class__.model_fields.keys()))
+	def _primary_key(self) -> any: # type: ignore
+		primary_key_field: str = next(iter(self.__class__.model_fields.keys()))
 		return getattr(self, primary_key_field)
 
 	def _to_csv_row(self) -> str:
 		row: str = ""
 		for value in self.model_dump().values():
-			row += _encode_str(str(value)) + ","
+			row += encode_str(str(value)) + ","
 		return row[:-1]
 	
 	def patch(self) -> bool:
@@ -66,7 +66,7 @@ class _PersistedModel(BaseModel):
 			"w", delete = False, dir = self.__class__.data_dir)
 		prev_record_found = False
 
-		primary_key = _encode_str(str(self._primary_key()))
+		primary_key = encode_str(str(self._primary_key())) # type: ignore
 
 		line = original_file.readline() 
 		while line != "":
@@ -109,7 +109,7 @@ class _PersistedModel(BaseModel):
 			"w", delete = False, dir = self.__class__.data_dir)
 		prev_record_found = False
 
-		primary_key = _encode_str(str(self._primary_key()))
+		primary_key = encode_str(str(self._primary_key())) # type: ignore
 
 		line = original_file.readline() 
 		while line != "":
@@ -158,7 +158,7 @@ class _PersistedModel(BaseModel):
 			"w", delete = False, dir = self.__class__.data_dir)
 		prev_record_found = False
 
-		primary_key = _encode_str(str(self._primary_key()))
+		primary_key = encode_str(str(self._primary_key())) # type: ignore
 
 		line = original_file.readline() 
 		while line != "":
@@ -193,7 +193,7 @@ class _PersistedModel(BaseModel):
 		updated_file = tempfile.TemporaryFile(
 			"w", delete = False, dir = self.__class__.data_dir)
 
-		primary_key = _encode_str(str(self._primary_key()))
+		primary_key = encode_str(str(self._primary_key())) # type: ignore
 
 		line = original_file.readline() 
 		while line != "":
@@ -237,7 +237,7 @@ class _PersistedModel(BaseModel):
 		keys = cls.model_fields.keys()
 		for key, value in zip(keys, values):
 			if cls.model_fields[key].annotation is str:
-				value = _decode_str(value)
+				value = decode_str(value)
 			fields[key] = value
 		return cls.model_validate(fields)
 	
@@ -249,7 +249,7 @@ class _PersistedModel(BaseModel):
 		cls._mutex.release()
 
 	@classmethod
-	def get_by_primary_key(cls, search_key: any) -> Self | None:
+	def get_by_primary_key(cls, search_key: any) -> Self | None: # type: ignore
 		"""
 		Returns the unique persisted instance of this class that has the 
 		specified primary key (recall that the primary key of the class is the
@@ -263,7 +263,7 @@ class _PersistedModel(BaseModel):
 			Self | None: The instance of the class which has the matching key
 			if it exists. Otherwise, returns `None`.
 		"""
-		key_str = _encode_str(str(search_key))
+		key_str = encode_str(str(search_key)) # type: ignore
 
 		with cls._read_csv_file() as r:
 			r.readline() # skip the header
@@ -298,7 +298,7 @@ class _PersistedModel(BaseModel):
 				line = r.readline()
 
 	@classmethod
-	def get_where(cls, **search_fields) -> Generator[Self, None, None]:
+	def get_where(cls, **search_fields) -> Generator[Self, None, None]: # type: ignore
 		"""
 		Yields each stored instance of this class that matches the conditions
 		set by `search_fields` via a generator.
@@ -326,10 +326,10 @@ class _PersistedModel(BaseModel):
 			):
 				# ...
 		"""
-		search_values: str = [] 
+		search_values: list[str | None] = [] 
 		for field in cls.model_fields.keys():
 			if field in search_fields:
-				search_values.append(_encode_str(str(search_fields[field])))
+				search_values.append(encode_str(str(search_fields[field]))) # type: ignore
 			else:
 				search_values.append(None)
 		
@@ -352,7 +352,7 @@ class _PersistedModel(BaseModel):
 				line = r.readline()
 
 	@classmethod
-	def get_first_where(cls, **search_fields) -> Self | None:
+	def get_first_where(cls, **search_fields) -> Self | None: # type: ignore
 		"""
 		Works the same as `get_where`, but only returns the first instance that
 		matches the search conditions (or `None` if no records match).
@@ -368,10 +368,10 @@ class _PersistedModel(BaseModel):
 		Examples:
 			>>> ExampleClass.get_first_where(field_1 = "value", field_2 = 123)
 		"""
-		search_values: str = [] 
+		search_values: list[str | None] = [] 
 		for field in cls.model_fields.keys():
 			if field in search_fields:
-				search_values.append(_encode_str(str(search_fields[field])))
+				search_values.append(encode_str(str(search_fields[field]))) # type: ignore
 			else:
 				search_values.append(None)
 		
