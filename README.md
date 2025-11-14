@@ -48,13 +48,10 @@ pytest
 
 from within the virtual environment. 
 
-To add more tests, just create a new file that starts with `test_`. For example,
-if you're testing the class you defined in `Apple.py`, then make a test file named
-`test_Apple.py` in the same directory. Inside of such a file, you can create 
-functions that similarly start with `test_` and use `assert` statements to test 
-conditions. When you run `pytest`, it will search for such test functions and run
-them. For an example, see [this file](back-end/db/test_PersistedModel.py).
-
-## To Do
-
-
+To add more unit tests, just create a new file that starts with `test_`. For 
+example, if you're testing the class you defined in `apple.py`, then make a 
+test directory (i.e., a subpackage) named `tests`, then make a file 
+`tests/test_apple.py`. Inside of such a file, you can create functions that 
+start with `test_` and use `assert` statements to test conditions. When you run 
+`pytest`, it will search for such test functions and run them. For an example, 
+see [this file](back-end/db/tests/test_persisted_model.py).

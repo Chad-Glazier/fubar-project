@@ -1,8 +1,12 @@
-from db._persisted_model import _PersistedModel
-from pydantic import EmailStr, Field
+from db.persisted_model import PersistedModel
+from pydantic import EmailStr
 
-class User(_PersistedModel):
+class User(PersistedModel):
 	id: str
 	name: str
 	email: EmailStr
-	password: str = Field(..., description = "An encrypted user password")
+
+class UserCredentials(PersistedModel):
+	user_id: str
+	email: EmailStr
+	password: str

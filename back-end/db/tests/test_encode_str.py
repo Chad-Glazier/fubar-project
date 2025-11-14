@@ -1,8 +1,8 @@
-from db._encode_str import _encode_str, _decode_str, _comma_replacement
+from db.encode_str import encode_str, decode_str
 
 def test_encode_str():
-	assert _encode_str("asdf,123") == f"asdf{_comma_replacement}123"
-	assert _encode_str(",asdf") == f"{_comma_replacement}asdf"
+	assert encode_str("asdf,123") == f"asdf%2C123"
+	assert encode_str(",asdf") == f"%2Casdf"
 
 def test_decode_str():
 	strings = [
@@ -12,4 +12,4 @@ def test_decode_str():
 		",,fasdf,34,5l3"
 	]
 	for string in strings:
-		assert _decode_str(_encode_str(string)) == string
+		assert decode_str(encode_str(string)) == string
