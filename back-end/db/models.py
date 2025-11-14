@@ -10,4 +10,3 @@ class UserCredentials(PersistedModel):
 	user_id: str
 	email: EmailStr
 	password: str
-
