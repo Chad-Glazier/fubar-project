@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from db import User
+from db.models import User
 
 from handlers import user_router
 
