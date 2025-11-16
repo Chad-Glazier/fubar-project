@@ -1,10 +1,10 @@
 from io import TextIOWrapper
+import uuid
 from pydantic import BaseModel
 from pathlib import Path
-from typing import ClassVar, Generator, Self
+from typing import ClassVar, Generator, Self, Any
 from threading import Lock
 import os
-import tempfile
 
 from db.encode_str import encode_str, decode_str
 
@@ -37,7 +37,7 @@ class PersistedModel(BaseModel):
 	"""
 	_mutex: ClassVar[Lock] = Lock()
 
-	def _primary_key(self) -> any: # type: ignore
+	def _primary_key(self) -> Any: # type: ignore
 		primary_key_field: str = next(iter(self.__class__.model_fields.keys()))
 		return getattr(self, primary_key_field)
 
@@ -62,8 +62,11 @@ class PersistedModel(BaseModel):
 		self.__class__._mutex.acquire()
 
 		original_file = self.__class__._read_csv_file()
-		updated_file = tempfile.TemporaryFile(
-			"w", delete = False, dir = self.__class__.data_dir)
+		updated_file = open(
+			f"{self.__class__.data_dir}/tmp_{self.__class__.__name__}_{uuid.uuid4().hex}",
+			"w"
+		)
+
 		prev_record_found = False
 
 		primary_key = encode_str(str(self._primary_key())) # type: ignore
@@ -105,8 +108,10 @@ class PersistedModel(BaseModel):
 		self.__class__._mutex.acquire()
 
 		original_file = self.__class__._read_csv_file()
-		updated_file = tempfile.TemporaryFile(
-			"w", delete = False, dir = self.__class__.data_dir)
+		updated_file = open(
+			f"{self.__class__.data_dir}/tmp_{self.__class__.__name__}_{uuid.uuid4().hex}",
+			"w"
+		)
 		prev_record_found = False
 
 		primary_key = encode_str(str(self._primary_key())) # type: ignore
@@ -154,8 +159,10 @@ class PersistedModel(BaseModel):
 		self.__class__._mutex.acquire()
 
 		original_file = self.__class__._read_csv_file()
-		updated_file = tempfile.TemporaryFile(
-			"w", delete = False, dir = self.__class__.data_dir)
+		updated_file = open(
+			f"{self.__class__.data_dir}/tmp_{self.__class__.__name__}_{uuid.uuid4().hex}",
+			"w"
+		)
 		prev_record_found = False
 
 		primary_key = encode_str(str(self._primary_key())) # type: ignore
@@ -190,8 +197,10 @@ class PersistedModel(BaseModel):
 		self.__class__._mutex.acquire()
 
 		original_file = self.__class__._read_csv_file()
-		updated_file = tempfile.TemporaryFile(
-			"w", delete = False, dir = self.__class__.data_dir)
+		updated_file = open(
+			f"{self.__class__.data_dir}/tmp_{self.__class__.__name__}_{uuid.uuid4().hex}",
+			"w"
+		)
 
 		primary_key = encode_str(str(self._primary_key())) # type: ignore
 
@@ -249,7 +258,7 @@ class PersistedModel(BaseModel):
 		cls._mutex.release()
 
 	@classmethod
-	def get_by_primary_key(cls, search_key: any) -> Self | None: # type: ignore
+	def get_by_primary_key(cls, search_key: Any) -> Self | None: # type: ignore
 		"""
 		Returns the unique persisted instance of this class that has the 
 		specified primary key (recall that the primary key of the class is the
