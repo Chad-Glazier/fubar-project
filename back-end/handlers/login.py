@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel
 import bcrypt
 
-from models.User import User
+from db import User
 
 login_router = APIRouter(prefix="/auth", tags=["auth"])
 
