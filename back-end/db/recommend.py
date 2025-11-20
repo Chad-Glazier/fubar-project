@@ -30,8 +30,21 @@ def recommend_for_user(user_id: str, k_neighbors: int = 5, n_recs: int = 10) -> 
     Scores are weighted averages of neighbor ratings using cosine similarity.
     """
     users = _build_user_item_map()
-    if user_id not in users:
-        return []
+
+    # Cold-start or unknown user fallback: recommend popular books by average rating
+    if user_id not in users or len(users.get(user_id, {})) == 0:
+        # compute average rating per book
+        totals: Dict[str, float] = {}
+        counts: Dict[str, int] = {}
+        for uvec in users.values():
+            for b, r in uvec.items():
+                totals[b] = totals.get(b, 0.0) + r
+                counts[b] = counts.get(b, 0) + 1
+        avg_scores: Dict[str, float] = {}
+        for b in totals:
+            avg_scores[b] = totals[b] / counts[b]
+        ranked = sorted(avg_scores.items(), key=lambda x: x[1], reverse=True)
+        return ranked[:n_recs]
 
     target = users[user_id]
 

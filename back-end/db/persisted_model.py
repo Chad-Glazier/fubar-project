@@ -7,6 +7,7 @@ from threading import Lock
 import os
 
 from db.encode_str import encode_str, decode_str
+import ast
 
 class PersistedModel(BaseModel):
 	"""
@@ -242,12 +243,34 @@ class PersistedModel(BaseModel):
 	@classmethod
 	def _from_csv_row(cls, csv_row: str) -> Self:
 		fields = {}
-		values = csv_row.split(",")
+		# strip trailing newline then split
+		values = csv_row.removesuffix("\n").split(",")
 		keys = cls.model_fields.keys()
 		for key, value in zip(keys, values):
-			if cls.model_fields[key].annotation is str:
-				value = decode_str(value)
-			fields[key] = value
+			# decode any encoded commas/newlines
+			decoded = decode_str(value)
+			ann = cls.model_fields[key].annotation
+			# strings should remain decoded strings
+			if ann is str:
+				fields[key] = decoded
+			else:
+				# handle explicit None
+				if decoded == "None" or decoded == "":
+					fields[key] = None
+				else:
+					# try literal eval for lists/dicts/numbers
+					try:
+						val = ast.literal_eval(decoded)
+					except Exception:
+						# fallback: try numeric conversion
+						try:
+							val = float(decoded)
+							# if it's an int-valued float, cast to int when annotation expects int
+							if ann is int:
+								val = int(val)
+						except Exception:
+							val = decoded
+					fields[key] = val
 		return cls.model_validate(fields)
 	
 	@classmethod
