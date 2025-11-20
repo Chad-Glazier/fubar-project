@@ -1,4 +1,5 @@
 from .user import user_router
 from .search import search_router
+from .recommendations import recommend_router
 
-__all__ = ["user_router", "search_router"]
+__all__ = ["user_router", "search_router", "recommend_router"]
