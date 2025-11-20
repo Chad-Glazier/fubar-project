@@ -60,6 +60,23 @@ def recommend_for_user(user_id: str, k_neighbors: int = 5, n_recs: int = 10) -> 
     sims.sort(key=lambda x: x[1], reverse=True)
     neighbors = sims[:k_neighbors]
 
+    # If there are no similar neighbors with positive similarity,
+    # fall back to recommending by global average (cold-start style).
+    if not neighbors:
+        totals: Dict[str, float] = {}
+        counts: Dict[str, int] = {}
+        for uvec in users.values():
+            for b, r in uvec.items():
+                totals[b] = totals.get(b, 0.0) + r
+                counts[b] = counts.get(b, 0) + 1
+        avg_scores: Dict[str, float] = {}
+        for b in totals:
+            avg_scores[b] = totals[b] / counts[b]
+        ranked = sorted(avg_scores.items(), key=lambda x: x[1], reverse=True)
+        # remove books the user already rated
+        ranked = [item for item in ranked if item[0] not in target]
+        return ranked[:n_recs]
+
     # candidate books = all books in data minus those user already rated
     candidate_books = set()
     for uvec in users.values():
