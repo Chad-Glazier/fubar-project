@@ -19,6 +19,22 @@ async def get_recommendations(user_id: str, n: int = Query(10), k: int = Query(5
         if book:
             out.append({"book": book, "score": score})
         else:
+            # Attempt to enrich from Google Books API using the book_id as a query
+            try:
+                enriched = Book.fetch_from_google_books(book_id)
+                if enriched:
+                    # persist the enriched book so future requests are local
+                    try:
+                        enriched.post()
+                    except Exception:
+                        # if persisting fails, continue without blocking the response
+                        pass
+                    out.append({"book": enriched, "score": score})
+                    continue
+            except Exception:
+                # ignore enrichment errors and fall back to returning id
+                pass
+
             out.append({"book_id": book_id, "score": score})
 
     return out
