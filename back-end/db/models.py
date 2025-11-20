@@ -10,3 +10,11 @@ class UserCredentials(PersistedModel):
 	user_id: str
 	email: EmailStr
 	password: str
+
+
+class Book(PersistedModel):
+    id: str
+    title: str
+    author: str
+    year: int
+    average_rating: float
