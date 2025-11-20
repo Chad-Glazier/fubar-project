@@ -3,6 +3,11 @@ from typing import Dict, Optional
 import httpx
 from urllib.parse import quote as _quote
 import uuid
+import os
+from dotenv import load_dotenv
+
+# Load local .env if present (safe no-op if not)
+load_dotenv()
 
 
 class Book(PersistedModel):
@@ -24,9 +29,14 @@ class Book(PersistedModel):
         if not query:
             return None
 
-        url = f"https://www.googleapis.com/books/v1/volumes?q={_quote(query)}&maxResults={max_results}"
+        params = {"q": query, "maxResults": max_results}
+        # prefer explicit API key from environment
+        key = os.getenv("GOOGLE_BOOKS_API_KEY")
+        if key:
+            params["key"] = key
+
         try:
-            resp = httpx.get(url, timeout=5.0)
+            resp = httpx.get("https://www.googleapis.com/books/v1/volumes", params=params, timeout=5.0)
             resp.raise_for_status()
             payload = resp.json()
             items = payload.get("items") or []
