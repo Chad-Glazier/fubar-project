@@ -7,13 +7,13 @@ def test_user_user_cf_simple():
     # User B: rates b1=5, b2=2, b3=4
     # User C: rates b1=1, b3=5
     reviews = [
-        UserReview(id="r1", user_id="A", book_id="b1", rating=5.0),
-        UserReview(id="r2", user_id="A", book_id="b2", rating=3.0),
-        UserReview(id="r3", user_id="B", book_id="b1", rating=5.0),
-        UserReview(id="r4", user_id="B", book_id="b2", rating=2.0),
-        UserReview(id="r5", user_id="B", book_id="b3", rating=4.0),
-        UserReview(id="r6", user_id="C", book_id="b1", rating=1.0),
-        UserReview(id="r7", user_id="C", book_id="b3", rating=5.0)
+        UserReview(id="r1", user_id="A", book_id="b1", rating=10),
+        UserReview(id="r2", user_id="A", book_id="b2", rating=6),
+        UserReview(id="r3", user_id="B", book_id="b1", rating=10),
+        UserReview(id="r4", user_id="B", book_id="b2", rating=4),
+        UserReview(id="r5", user_id="B", book_id="b3", rating=8),
+        UserReview(id="r6", user_id="C", book_id="b1", rating=2),
+        UserReview(id="r7", user_id="C", book_id="b3", rating=10)
 	]
     for review in reviews: 
         review.put()

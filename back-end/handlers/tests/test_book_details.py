@@ -10,8 +10,8 @@ def test_book_details_shows_metadata_and_reviews():
     # create book and reviews
     tmp_records: list[PersistedModel] = [
         Book(id="bd1", title="Details Book", authors=["Auth"]),
-        UserReview(id="rbd1", user_id="user1", book_id="bd1", rating=4.0),
-        UserReview(id="rbd2", user_id="user2", book_id="bd1", rating=5.0)
+        UserReview(id="rbd1", user_id="user1", book_id="bd1", rating=8),
+        UserReview(id="rbd2", user_id="user2", book_id="bd1", rating=10)
 	]
     for record in tmp_records:
         record.put()
@@ -22,7 +22,7 @@ def test_book_details_shows_metadata_and_reviews():
     assert "book" in data
     assert data["book"]["id"] == "bd1"
     assert "average_rating" in data
-    assert abs(data["average_rating"] - 4.5) < 1e-6
+    assert abs(data["average_rating"] - 9.0) < 1e-6
     assert data["review_count"] == 2
     assert isinstance(data["reviews"], list)
     

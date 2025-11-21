@@ -11,8 +11,8 @@ def test_recommendations_endpoint_cold_start():
     tmp_records: list[PersistedModel] = [
         Book(id="b1", title="Book One", authors=["A"]),
 		Book(id="b2", title="Book Two", authors=["B"]),
-		UserReview(id="r1", user_id="X", book_id="b1", rating=5.0),
-		UserReview(id="r2", user_id="Y", book_id="b2", rating=4.0),
+		UserReview(id="r1", user_id="X", book_id="b1", rating=10),
+		UserReview(id="r2", user_id="Y", book_id="b2", rating=8),
 	]
     for record in tmp_records:
         record.put()

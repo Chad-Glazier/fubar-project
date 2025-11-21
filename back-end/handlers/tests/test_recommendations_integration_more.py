@@ -20,9 +20,9 @@ def test_recommendations_endpoint_with_history():
 
     # User U rated x1 and x2; other users rated x3
     tmp_reviews = [
-		UserReview(id="r1", user_id="U", book_id="x1", rating=5.0),
-		UserReview(id="r2", user_id="U", book_id="x2", rating=3.0),
-		UserReview(id="r3", user_id="V", book_id="x3", rating=5.0),
+		UserReview(id="r1", user_id="U", book_id="x1", rating=10),
+		UserReview(id="r2", user_id="U", book_id="x2", rating=6),
+		UserReview(id="r3", user_id="V", book_id="x3", rating=10),
 	]
     for review in tmp_reviews:
         review.put()
@@ -45,8 +45,8 @@ def test_recommendations_enrichment_persists(monkeypatch: MonkeyPatch):
 
     # Create reviews such that recommended book id will be 'missing-1'
     tmp_reviews = [
-        UserReview(id="r10", user_id="A", book_id="b_known", rating=5.0),
-		UserReview(id="r11", user_id="B", book_id="missing-1", rating=4.0)
+        UserReview(id="r10", user_id="A", book_id="b_known", rating=10),
+		UserReview(id="r11", user_id="B", book_id="missing-1", rating=8)
 	]
     for review in tmp_reviews:
         review.put()
