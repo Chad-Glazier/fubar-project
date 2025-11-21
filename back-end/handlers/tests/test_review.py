@@ -135,11 +135,37 @@ def test_get_review():
 
 	cleanup(client, test_user, test_books)
 
-def test_update_review():
-	pass
-
 def test_delete_review():
-	pass
+	client, test_user, test_book = setup()
+
+	resp = client.put(
+		f"/review/{test_book[0].id}",
+		content = ReviewDetails(
+			rating = 4,
+			text = "kinda mid tbh"
+		).model_dump_json()
+	)
+
+	assert resp.status_code == HTTPStatus.CREATED
+
+	body: UserReview = UserReview.model_validate_json(resp.content)
+
+	assert body.book_id == test_book[0].id
+	assert body.user_id == test_user.id
+
+	resp = client.delete(
+		f"/review/{test_book[0].id}"
+	)
+
+	assert resp.status_code == HTTPStatus.OK
+
+	resp = client.get(
+		f"/review/{test_book[0].id}"
+	)
+
+	assert resp.status_code == HTTPStatus.NOT_FOUND
+
+	cleanup(client, test_user, test_book)
 
 def test_user_data():
 	client, test_user, test_books = setup()
