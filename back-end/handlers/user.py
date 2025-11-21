@@ -5,10 +5,11 @@ from uuid import uuid4
 from http import HTTPStatus
 import argon2
 
-from db.user_models import User, UserSession, TOKEN_NAME
+from db.models.User import User, UserSession, TOKEN_NAME
 
 password_hasher = argon2.PasswordHasher()
 
+user_router = APIRouter(prefix = "/user")
 
 ###############################################################################
 # 

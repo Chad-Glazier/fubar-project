@@ -5,11 +5,11 @@ This file keeps that import path working while the real implementations
 live in `db/models/*.py`.
 """
 
-from .models.User import User, UserCredentials
+from .models.User import User
 from .models.Book import Book
 from .models.UserReview import UserReview
 
-__all__ = ["User", "UserCredentials", "Book", "UserReview"]
+__all__ = ["User", "Book", "UserReview"]
 
 
 

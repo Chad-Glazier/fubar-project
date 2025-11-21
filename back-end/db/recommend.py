@@ -3,7 +3,6 @@ import math
 
 from db.models.UserReview import UserReview
 
-
 def _build_user_item_map() -> Dict[str, Dict[str, float]]:
     """Return mapping user_id -> {book_id: rating} for all reviews."""
     users: Dict[str, Dict[str, float]] = {}
