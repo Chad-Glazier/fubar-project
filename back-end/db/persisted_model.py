@@ -1,10 +1,13 @@
 from io import TextIOWrapper
-import uuid
-from pydantic import BaseModel
-from pathlib import Path
-from typing import ClassVar, Generator, Self, Any
-from threading import Lock
+import json
 import os
+from pathlib import Path
+from threading import Lock
+from typing import Any, ClassVar, Generator, Self, Union, get_args, get_origin
+from types import UnionType
+import uuid
+
+from pydantic import BaseModel
 
 from db.encode_str import encode_str, decode_str
 import ast
@@ -43,10 +46,19 @@ class PersistedModel(BaseModel):
 		return getattr(self, primary_key_field)
 
 	def _to_csv_row(self) -> str:
-		row: str = ""
-		for value in self.model_dump().values():
-			row += encode_str(str(value)) + ","
-		return row[:-1]
+		row_values: list[str] = []
+		for field_name, value in self.model_dump().items():
+			field_info = self.__class__.model_fields[field_name]
+			annotation = field_info.annotation
+			origin = get_origin(annotation)
+
+			if origin in (list, dict, tuple, set):
+				serialized_value = json.dumps(value)
+			else:
+				serialized_value = str(value)
+
+			row_values.append(encode_str(serialized_value))
+		return ",".join(row_values)
 	
 	def patch(self) -> bool:
 		"""
@@ -140,6 +152,16 @@ class PersistedModel(BaseModel):
 		self.__class__._mutex.release()
 
 		return not prev_record_found
+	
+	@classmethod
+	def create(cls, **fields) -> Self: # type: ignore
+		"""
+		Convenience helper that constructs an instance with the provided fields,
+		persists it immediately, and then returns the instance.
+		"""
+		instance = cls(**fields)
+		instance.put()
+		return instance
 	
 	def put(self) -> None:
 		"""
@@ -245,6 +267,44 @@ class PersistedModel(BaseModel):
 		if csv_row.endswith("\n"):
 			csv_row = csv_row[:-1]
 		fields = {}
+		values = csv_row.removesuffix("\n").split(",")
+		keys = cls.model_fields.keys()
+		for key, value in zip(keys, values):
+			field_info = cls.model_fields[key]
+			annotation = field_info.annotation
+			origin = get_origin(annotation)
+			decoded_value = decode_str(value)
+
+			args = get_args(annotation)
+			allows_none = any(arg is type(None) for arg in args)
+
+			# unwrap Optional/Union types that include None
+			if origin in (UnionType, Union):
+				non_none_args = [arg for arg in args if arg is not type(None)]
+				if len(non_none_args) == 1:
+					annotation = non_none_args[0]
+					origin = get_origin(annotation)
+				else:
+					origin = None
+
+			if decoded_value == "None" and allows_none:
+				fields[key] = None
+				continue
+
+			if origin in (list, dict, tuple, set):
+				try:
+					json_value = json.loads(decoded_value)
+				except json.JSONDecodeError:
+					json_value = decoded_value
+
+				if origin is tuple:
+					fields[key] = tuple(json_value) if isinstance(json_value, list) else json_value
+				elif origin is set:
+					fields[key] = set(json_value) if isinstance(json_value, list) else json_value
+				else:
+					fields[key] = json_value
+			else:
+				fields[key] = decoded_value
 		# strip trailing newline then split
 		values = csv_row.removesuffix("\n").split(",")
 		keys = cls.model_fields.keys()
@@ -308,6 +368,13 @@ class PersistedModel(BaseModel):
 				line = r.readline()
 
 		return None
+	
+	@classmethod
+	def exists(cls, search_key: Any) -> bool:
+		"""
+		Returns True if a record with the provided primary key exists.
+		"""
+		return cls.get_by_primary_key(search_key) is not None
 	
 	@classmethod
 	def get_all(cls) -> Generator[Self, None, None]:
