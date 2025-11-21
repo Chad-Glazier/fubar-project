@@ -7,6 +7,7 @@ from threading import Lock
 import os
 
 from db.encode_str import encode_str, decode_str
+import ast
 
 class PersistedModel(BaseModel):
 	"""
@@ -241,13 +242,37 @@ class PersistedModel(BaseModel):
 
 	@classmethod
 	def _from_csv_row(cls, csv_row: str) -> Self:
+		if csv_row.endswith("\n"):
+			csv_row = csv_row[:-1]
 		fields = {}
-		values = csv_row.split(",")
+		# strip trailing newline then split
+		values = csv_row.removesuffix("\n").split(",")
 		keys = cls.model_fields.keys()
 		for key, value in zip(keys, values):
-			if cls.model_fields[key].annotation is str:
-				value = decode_str(value)
-			fields[key] = value
+			# decode any encoded commas/newlines
+			decoded = decode_str(value)
+			ann = cls.model_fields[key].annotation
+			# strings should remain decoded strings
+			if ann is str:
+				fields[key] = decoded
+			else:
+				# handle explicit None
+				if decoded == "None" or decoded == "":
+					fields[key] = None
+				else:
+					# try literal eval for lists/dicts/numbers
+					try:
+						val = ast.literal_eval(decoded)
+					except Exception:
+						# fallback: try numeric conversion
+						try:
+							val = float(decoded)
+							# if it's an int-valued float, cast to int when annotation expects int
+							if ann is int:
+								val = int(val)
+						except Exception:
+							val = decoded
+					fields[key] = val
 		return cls.model_validate(fields)
 	
 	@classmethod
@@ -258,7 +283,7 @@ class PersistedModel(BaseModel):
 		cls._mutex.release()
 
 	@classmethod
-	def get_by_primary_key(cls, search_key: Any) -> Self | None: # type: ignore
+	def get_by_primary_key(cls, search_key: Any) -> Self | None:
 		"""
 		Returns the unique persisted instance of this class that has the 
 		specified primary key (recall that the primary key of the class is the
@@ -307,7 +332,7 @@ class PersistedModel(BaseModel):
 				line = r.readline()
 
 	@classmethod
-	def get_where(cls, **search_fields) -> Generator[Self, None, None]: # type: ignore
+	def get_where(cls, **search_fields: Any) -> Generator[Self, None, None]: # type: ignore
 		"""
 		Yields each stored instance of this class that matches the conditions
 		set by `search_fields` via a generator.
@@ -361,7 +386,7 @@ class PersistedModel(BaseModel):
 				line = r.readline()
 
 	@classmethod
-	def get_first_where(cls, **search_fields) -> Self | None: # type: ignore
+	def get_first_where(cls, **search_fields: Any) -> Self | None: # type: ignore
 		"""
 		Works the same as `get_where`, but only returns the first instance that
 		matches the search conditions (or `None` if no records match).

@@ -1,5 +1,4 @@
-from fastapi import FastAPI, HTTPException
-from db.models import User
+from fastapi import FastAPI
 
 from handlers import user_router, search_router, recommend_router, book_router
 

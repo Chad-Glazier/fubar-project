@@ -1,12 +1,16 @@
-from db.persisted_model import PersistedModel
-from pydantic import EmailStr
+"""Compatibility shim: re-export models from the `db.models` package.
 
-class User(PersistedModel):
-	id: str
-	name: str
-	email: EmailStr
+Older code imported `db.models.User` or `from db.models import User`.
+This file keeps that import path working while the real implementations
+live in `db/models/*.py`.
+"""
 
-class UserCredentials(PersistedModel):
-	user_id: str
-	email: EmailStr
-	password: str
+from .models.User import User, UserCredentials
+from .models.Book import Book
+from .models.UserReview import UserReview
+
+__all__ = ["User", "UserCredentials", "Book", "UserReview"]
+
+
+
+
