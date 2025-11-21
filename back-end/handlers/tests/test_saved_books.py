@@ -5,76 +5,83 @@ from server import app
 from db.models.User import User
 from db.models.Book import Book
 from db.models.SavedBook import SavedBook
+from handlers.user import RegistrationDetails
 
 client = TestClient(app)
 
 def cleanup():
-	tmp_user = User.get_by_primary_key("u_test")
+	client.delete("/user/session")
+
+	tmp_user = User.get_first_where(email = "test@example.com")
 	if tmp_user != None:
 		tmp_user.delete()
 
 	tmp_book = Book.get_by_primary_key("b_test")
 	if tmp_book != None:
-         tmp_book.delete()
-         
+		tmp_book.delete()
+		 
 def setup_data():
 	cleanup()
-	
-	user = User.create(
-		id="u_test",
-		name="Test User",
-		display_name="Test User",
-		email="test@example.com",
-		password="secret",
+
+	user_details = RegistrationDetails(
+		display_name= "Test User",
+		email = "test@example.com",
+		password = "secret"
 	)
+	
+	client.post("/user", content = user_details.model_dump_json())
+	
 	book = Book.create(
 		id="b_test",
 		title="Test Book",
 		authors=["Author"],
 		description="desc",
 	)
-     
+
+	user = User.get_first_where(email = "test@example.com")
+	if user == None:
+		raise Exception("Error creating user for test.")
+		 
 	return user, book
 
 def test_save_book():
-    user, book = setup_data()
+	user, book = setup_data()
 
-    response = client.post(f"/users/{user.id}/saved/{book.id}")
-    assert response.status_code == 200
-    assert response.json()["message"] == "Book saved"
+	response = client.put(f"/saved_book/{book.id}")
+	assert response.status_code == 200
 
-    saved_items = SavedBook.get_saved_for_user(user.id)
-    assert len(saved_items) == 1
-    assert saved_items[0].book_id == book.id
-    
-    cleanup()
+	saved_items = SavedBook.get_saved_for_user(user.id)
+	assert len(saved_items) == 1
+	assert saved_items[0].book_id == book.id
+	
+	cleanup()
 
 def test_get_saved_books():
-    user, book = setup_data()
+	_, book = setup_data()
 
-    client.post(f"/users/{user.id}/saved/{book.id}")
+	response = client.put(f"/saved_book/{book.id}")
+	assert response.status_code == 200
 
-    response = client.get(f"/users/{user.id}/saved")
-    assert response.status_code == 200
+	response = client.get(f"/saved_book")
+	assert response.status_code == 200
 
-    data: list[Any] = response.json()
-    assert isinstance(data, list)
-    assert len(data) == 1
-    assert data[0]["book_id"] == book.id
+	data: list[Any] = response.json()
+	assert isinstance(data, list)
+	assert len(data) == 1
+	assert Book.model_validate(data[0]).id == book.id
 
-    cleanup()
+	cleanup()
 
 def test_unsave_book():
-    user, book = setup_data()
+	user, book = setup_data()
 
-    client.post(f"/users/{user.id}/saved/{book.id}")
+	client.put(f"/saved_book/{book.id}")
 
-    response = client.delete(f"/users/{user.id}/saved/{book.id}")
-    assert response.status_code == 200
-    assert response.json()["message"] == "Book removed"
+	response = client.delete(f"/saved_book/{book.id}")
+	assert response.status_code == 200
 
-    saved_items = SavedBook.get_saved_for_user(user.id)
-    assert len(saved_items) == 0
-    
-    cleanup()
+	saved_items = SavedBook.get_saved_for_user(user.id)
+	assert len(saved_items) == 0
+	
+	cleanup()
 
