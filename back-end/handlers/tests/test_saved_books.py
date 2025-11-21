@@ -20,8 +20,10 @@ def cleanup():
 	if tmp_book != None:
 		tmp_book.delete()
 
-	# for tmp_save in SavedBook.get_where(book_id = "b_test"):
-	# 	tmp_save.delete()
+	tmp_save = SavedBook.get_first_where(book_id = "b_test")
+	while tmp_save != None:
+		tmp_save.delete()
+		tmp_save = SavedBook.get_first_where(book_id = "b_test")
 
 def setup_data():
 	cleanup()

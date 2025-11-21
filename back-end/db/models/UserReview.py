@@ -8,3 +8,4 @@ class UserReview(PersistedModel):
     book_id: str
     rating: int = Field(..., ge=0, le=10)
     text: str = Field(default = "")
+
