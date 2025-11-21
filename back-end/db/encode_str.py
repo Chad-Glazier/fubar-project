@@ -1,4 +1,4 @@
-_comma_replacement = "%2C" # Same as the URI encoding replacement.
+_comma_replacement = "%2C" # same as usual URI encoding
 
 def encode_str(string: str) -> str:
 	"""
