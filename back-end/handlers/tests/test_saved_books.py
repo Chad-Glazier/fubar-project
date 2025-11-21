@@ -19,7 +19,10 @@ def cleanup():
 	tmp_book = Book.get_by_primary_key("b_test")
 	if tmp_book != None:
 		tmp_book.delete()
-		 
+
+	# for tmp_save in SavedBook.get_where(book_id = "b_test"):
+	# 	tmp_save.delete()
+
 def setup_data():
 	cleanup()
 
