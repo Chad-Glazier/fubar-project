@@ -1,3 +1,4 @@
+from typing import Any
 from fastapi.testclient import TestClient
 
 from server import app
@@ -7,27 +8,32 @@ from db.SavedBook import SavedBook
 
 client = TestClient(app)
 
+def cleanup():
+	tmp_user = User.get_by_primary_key("u_test")
+	if tmp_user != None:
+		tmp_user.delete()
 
-def setup_function():
-    SavedBook._drop_table()
-
-
+	tmp_book = Book.get_by_primary_key("b_test")
+	if tmp_book != None:
+         tmp_book.delete()
+         
 def setup_data():
-    user = User.create(
-        id="u_test",
-        name="Test User",
-        display_name="Test User",
-        email="test@example.com",
-        password="secret",
-    )
-    book = Book.create(
-        id="b_test",
-        title="Test Book",
-        authors=["Author"],
-        description="desc",
-    )
-    return user, book
-
+	cleanup()
+	
+	user = User.create(
+		id="u_test",
+		name="Test User",
+		display_name="Test User",
+		email="test@example.com",
+		password="secret",
+	)
+	book = Book.create(
+		id="b_test",
+		title="Test Book",
+		authors=["Author"],
+		description="desc",
+	)
+	return user, book
 
 def test_save_book():
     user, book = setup_data()
@@ -39,6 +45,8 @@ def test_save_book():
     saved_items = SavedBook.get_saved_for_user(user.id)
     assert len(saved_items) == 1
     assert saved_items[0].book_id == book.id
+    
+    cleanup()
 
 
 def test_get_saved_books():
@@ -49,11 +57,12 @@ def test_get_saved_books():
     response = client.get(f"/users/{user.id}/saved")
     assert response.status_code == 200
 
-    data = response.json()
+    data: list[Any] = response.json()
     assert isinstance(data, list)
     assert len(data) == 1
     assert data[0]["book_id"] == book.id
 
+    cleanup()
 
 def test_unsave_book():
     user, book = setup_data()
@@ -66,3 +75,6 @@ def test_unsave_book():
 
     saved_items = SavedBook.get_saved_for_user(user.id)
     assert len(saved_items) == 0
+    
+    cleanup()
+

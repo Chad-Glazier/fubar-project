@@ -154,7 +154,7 @@ class PersistedModel(BaseModel):
 		return not prev_record_found
 	
 	@classmethod
-	def create(cls, **fields) -> Self: # type: ignore
+	def create(cls, **fields: Any) -> Self:
 		"""
 		Convenience helper that constructs an instance with the provided fields,
 		persists it immediately, and then returns the instance.
@@ -267,7 +267,7 @@ class PersistedModel(BaseModel):
 		if csv_row.endswith("\n"):
 			csv_row = csv_row[:-1]
 		fields = {}
-		values = csv_row.removesuffix("\n").split(",")
+		values = csv_row.split(",")
 		keys = cls.model_fields.keys()
 		for key, value in zip(keys, values):
 			field_info = cls.model_fields[key]
