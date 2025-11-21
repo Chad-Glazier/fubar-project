@@ -1,12 +1,9 @@
 from fastapi.testclient import TestClient
-from fastapi import FastAPI
 from http import HTTPStatus
 
-from handlers.user import user_router, UserDetails, RegistrationDetails, UserCredentials
+from handlers.user import UserDetails, RegistrationDetails, UserCredentials
 from db.models.User import User, UserSession, TOKEN_NAME
-
-app = FastAPI()
-app.include_router(user_router)
+from server import app
 
 def test_user_register_login_logout():
 	
