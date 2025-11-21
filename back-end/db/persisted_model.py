@@ -6,11 +6,10 @@ from threading import Lock
 from typing import Any, ClassVar, Generator, Self, Union, get_args, get_origin
 from types import UnionType
 import uuid
-
 from pydantic import BaseModel
+import ast
 
 from db.encode_str import encode_str, decode_str
-import ast
 
 class PersistedModel(BaseModel):
 	"""
@@ -317,9 +316,9 @@ class PersistedModel(BaseModel):
 					json_value = decoded_value
 
 				if origin is tuple:
-					fields[key] = tuple(json_value) if isinstance(json_value, list) else json_value
+					fields[key] = tuple(json_value) if isinstance(json_value, list) else json_value # pyright: ignore[reportUnknownArgumentType]
 				elif origin is set:
-					fields[key] = set(json_value) if isinstance(json_value, list) else json_value
+					fields[key] = set(json_value) if isinstance(json_value, list) else json_value # pyright: ignore[reportUnknownArgumentType]
 				else:
 					fields[key] = json_value
 			else:

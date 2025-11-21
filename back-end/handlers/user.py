@@ -25,6 +25,10 @@ class UserCredentials(BaseModel):
 	email: EmailStr
 	password: Annotated[str, StringConstraints(min_length=1)]
 
+class UserDetails(BaseModel):
+	display_name: str
+	email: str
+
 ###############################################################################
 # 
 # The request handlers are defined below.
@@ -77,9 +81,18 @@ async def register_user(user_details: RegistrationDetails, resp: Response) \
 	resp.status_code = HTTPStatus.CREATED
 
 #
-# Gets the (non-sensitive) data about a user.
+# Gets the data about the currently logged in user.
 #
-
+@user_router.get("/")
+async def account_info(req: Request) -> UserDetails:
+	user = User.from_session(req)
+	if user == None:
+		raise HTTPException(status_code = 404, detail = "Not currently logged in.")
+	
+	return UserDetails(
+		display_name = user.display_name,
+		email = user.email
+	)
 
 #
 # Lets users log out (i.e., delete their session).

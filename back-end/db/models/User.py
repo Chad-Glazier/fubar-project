@@ -17,9 +17,10 @@ class UserSession(PersistedModel):
 
 	def renew(self) -> None:
 		self.expiration_timestamp = time_ns() + TOKEN_DURATION_NS
+		self.put()
 
 	def is_expired(self) -> bool:
-		return self.expiration_timestamp > time_ns() or \
+		return self.expiration_timestamp < time_ns() or \
 			time_ns() - self.original_creation_timestamp > TOKEN_MAX_DURATION_NS
 
 	@classmethod

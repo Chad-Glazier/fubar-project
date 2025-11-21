@@ -1,37 +1,54 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+from http import HTTPStatus
 
-from db.User import User
-from db.Book import Book
-from db.SavedBook import SavedBook
+from db.models.User import User
+from db.models.Book import Book
+from db.models.SavedBook import SavedBook
 
-router = APIRouter()
+saved_book_router = APIRouter(prefix = "/saved_book")
 
+@saved_book_router.put("/{book_id}")
+def save_book(book_id: str, req: Request):
+	user = User.from_session(req)
+	if user == None:
+		raise HTTPException(
+			status_code = HTTPStatus.UNAUTHORIZED,
+			detail = "You must be logged in to save books."
+		)
 
-@router.post("/users/{user_id}/saved/{book_id}")
-def save_book(user_id: str, book_id: str):
-    # Validate user
-    if not User.exists(user_id):
-        raise HTTPException(status_code=404, detail="User not found")
+	# Validate book
+	if not Book.exists(book_id):
+		raise HTTPException(status_code=404, detail="Book not found")
 
-    # Validate book
-    if not Book.exists(book_id):
-        raise HTTPException(status_code=404, detail="Book not found")
+	# Save the book (idempotently)
+	SavedBook.save_for_user(user.id, book_id)
 
-    # Save entry
-    SavedBook.save_for_user(user_id, book_id)
-    return {"message": "Book saved"}
+@saved_book_router.delete("/{book_id}")
+def unsave_book(book_id: str, req: Request):
+	user = User.from_session(req)
+	if user == None:
+		raise HTTPException(
+			status_code = HTTPStatus.UNAUTHORIZED,
+			detail = "You must be logged in to unsave books."
+		)
+	
+	SavedBook.remove_for_user(user.id, book_id)
 
+@saved_book_router.get("/")
+def get_saved_books(req: Request) -> list[Book]:
+	user = User.from_session(req)
+	if user == None:
+		raise HTTPException(
+			status_code = HTTPStatus.UNAUTHORIZED,
+			detail = "You must be logged in to view saved books."
+		)
 
-@router.delete("/users/{user_id}/saved/{book_id}")
-def unsave_book(user_id: str, book_id: str):
-    SavedBook.remove_for_user(user_id, book_id)
-    return {"message": "Book removed"}
+	saved_books: list[Book] = []
+	for record in SavedBook.get_where(user_id = user.id):
+		book = Book.get_by_primary_key(record.book_id)
+		if book == None:
+			record.delete()
+		else:
+			saved_books.append(book)
 
-
-@router.get("/users/{user_id}/saved")
-def get_saved_books(user_id: str):
-    if not User.exists(user_id):
-        raise HTTPException(status_code=404, detail="User not found")
-
-    saved_books = SavedBook.get_saved_for_user(user_id)
-    return saved_books
+	return saved_books

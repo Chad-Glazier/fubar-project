@@ -1,15 +1,15 @@
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
-from handlers.user import RegistrationDetails, UserCredentials
 from http import HTTPStatus
 
-from handlers.user import user_router
+from handlers.user import user_router, UserDetails, RegistrationDetails, UserCredentials
 from db.models.User import User, UserSession, TOKEN_NAME
 
 app = FastAPI()
 app.include_router(user_router)
 
 def test_user_register_login_logout():
+	
 	new_client = TestClient(app)
 
 	new_details = RegistrationDetails(
@@ -79,6 +79,41 @@ def test_user_register_login_logout():
 	assert new_client.cookies.get(TOKEN_NAME) == new_session.session_id
 
 	# Cleanup
+
+	new_user.delete()
+	new_session.delete()
+
+def test_user_recognition():
+	new_client = TestClient(app)
+
+	new_details = RegistrationDetails(
+		display_name = "jimi_hendrix",
+		email = "jhendrix42@gmail.com",
+		password = "stratocaster123"
+	)
+
+	new_client.post(
+		"/user",
+		content = new_details.model_dump_json()
+	)
+
+	new_user = User.get_first_where(
+		display_name = "jimi_hendrix",
+		email = "jhendrix42@gmail.com"
+	)
+	assert new_user != None
+	
+	new_session = UserSession.get_first_where(
+		user_id = new_user.id
+	)
+	assert new_session != None
+
+	resp = new_client.get("/user")
+	body: UserDetails = UserDetails.model_validate_json(resp.content)
+
+	assert resp.status_code == 200
+	assert body.email == new_details.email
+	assert body.display_name == new_details.display_name
 
 	new_user.delete()
 	new_session.delete()
