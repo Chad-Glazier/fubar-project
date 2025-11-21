@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 # Load local .env if present (safe no-op if not)
 load_dotenv()
 
-
 class Book(PersistedModel):
     id: str
     title: str
