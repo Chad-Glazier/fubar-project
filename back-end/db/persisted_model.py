@@ -241,6 +241,8 @@ class PersistedModel(BaseModel):
 
 	@classmethod
 	def _from_csv_row(cls, csv_row: str) -> Self:
+		if csv_row.endswith("\n"):
+			csv_row = csv_row[:-1]
 		fields = {}
 		values = csv_row.split(",")
 		keys = cls.model_fields.keys()
@@ -258,7 +260,7 @@ class PersistedModel(BaseModel):
 		cls._mutex.release()
 
 	@classmethod
-	def get_by_primary_key(cls, search_key: Any) -> Self | None: # type: ignore
+	def get_by_primary_key(cls, search_key: Any) -> Self | None:
 		"""
 		Returns the unique persisted instance of this class that has the 
 		specified primary key (recall that the primary key of the class is the
@@ -307,7 +309,7 @@ class PersistedModel(BaseModel):
 				line = r.readline()
 
 	@classmethod
-	def get_where(cls, **search_fields) -> Generator[Self, None, None]: # type: ignore
+	def get_where(cls, **search_fields: Any) -> Generator[Self, None, None]: # type: ignore
 		"""
 		Yields each stored instance of this class that matches the conditions
 		set by `search_fields` via a generator.
@@ -361,7 +363,7 @@ class PersistedModel(BaseModel):
 				line = r.readline()
 
 	@classmethod
-	def get_first_where(cls, **search_fields) -> Self | None: # type: ignore
+	def get_first_where(cls, **search_fields: Any) -> Self | None: # type: ignore
 		"""
 		Works the same as `get_where`, but only returns the first instance that
 		matches the search conditions (or `None` if no records match).
