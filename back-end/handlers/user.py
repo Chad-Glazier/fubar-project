@@ -6,6 +6,7 @@ from http import HTTPStatus
 import argon2
 
 from db.models.User import User, UserSession, TOKEN_NAME
+from db.models.UserReview import UserReview
 
 password_hasher = argon2.PasswordHasher()
 
@@ -28,6 +29,7 @@ class UserCredentials(BaseModel):
 class UserDetails(BaseModel):
 	display_name: str
 	email: str
+	reviews: list[UserReview]
 
 ###############################################################################
 # 
@@ -89,9 +91,14 @@ async def account_info(req: Request) -> UserDetails:
 	if user == None:
 		raise HTTPException(status_code = 404, detail = "Not currently logged in.")
 	
+	user_reviews: list[UserReview] = []
+	for review in UserReview.get_where(user_id = user.id):
+		user_reviews.append(review)
+	
 	return UserDetails(
 		display_name = user.display_name,
-		email = user.email
+		email = user.email,
+		reviews = user_reviews
 	)
 
 #
