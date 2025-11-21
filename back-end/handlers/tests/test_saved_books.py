@@ -13,7 +13,13 @@ def setup_function():
 
 
 def setup_data():
-    user = User.create(id="u_test", name="Test User", email="test@example.com")
+    user = User.create(
+        id="u_test",
+        name="Test User",
+        display_name="Test User",
+        email="test@example.com",
+        password="secret",
+    )
     book = Book.create(
         id="b_test",
         title="Test Book",
