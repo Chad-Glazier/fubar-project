@@ -9,7 +9,6 @@ from db.user_models import User, UserSession, TOKEN_NAME
 
 password_hasher = argon2.PasswordHasher()
 
-user_router = APIRouter(prefix = "/user", tags = ["users"])
 
 ###############################################################################
 # 
