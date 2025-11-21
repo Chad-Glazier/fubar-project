@@ -2,7 +2,7 @@ from typing import Any
 from fastapi.testclient import TestClient
 from http import HTTPStatus
 
-from handlers.user import RegistrationDetails
+from handlers.user import RegistrationDetails, UserDetails
 from handlers.review import ReviewDetails
 from db.models.User import User, UserSession, TOKEN_NAME
 from db.models.UserReview import UserReview
@@ -166,3 +166,29 @@ def test_delete_review():
 	assert resp.status_code == HTTPStatus.NOT_FOUND
 
 	cleanup(client, test_user, test_book)
+
+def test_user_data():
+	client, test_user, test_books = setup()
+
+	reviews = [
+		ReviewDetails(rating = 4, text = "kinda mid tbh"),
+		ReviewDetails(rating = 1, text = "terrible"),
+		ReviewDetails(rating = 10),
+		ReviewDetails(rating = 7),
+	]
+	for review, test_book in zip(reviews, test_books):
+		resp = client.put(
+			f"/review/{test_book.id}",
+			content = review.model_dump_json()
+		)
+		assert resp.status_code == HTTPStatus.CREATED
+
+	resp = client.get("/user")
+	body = UserDetails.model_validate_json(resp.content)
+
+	assert resp.status_code == HTTPStatus.OK
+	assert len(body.reviews) == 4
+	assert body.display_name == test_user.display_name
+	assert body.email == test_user.email
+
+	cleanup(client, test_user, test_books)
