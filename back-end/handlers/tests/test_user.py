@@ -10,6 +10,7 @@ app = FastAPI()
 app.include_router(user_router)
 
 def test_user_register_login_logout():
+	
 	new_client = TestClient(app)
 
 	new_details = RegistrationDetails(

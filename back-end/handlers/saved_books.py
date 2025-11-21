@@ -1,11 +1,10 @@
 from fastapi import APIRouter, HTTPException
 
-from db.User import User
-from db.Book import Book
-from db.SavedBook import SavedBook
+from db.models.User import User
+from db.models.Book import Book
+from db.models.SavedBook import SavedBook
 
 router = APIRouter()
-
 
 @router.post("/users/{user_id}/saved/{book_id}")
 def save_book(user_id: str, book_id: str):
@@ -26,7 +25,6 @@ def save_book(user_id: str, book_id: str):
 def unsave_book(user_id: str, book_id: str):
     SavedBook.remove_for_user(user_id, book_id)
     return {"message": "Book removed"}
-
 
 @router.get("/users/{user_id}/saved")
 def get_saved_books(user_id: str):

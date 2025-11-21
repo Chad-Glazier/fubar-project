@@ -1,9 +1,11 @@
 from fastapi.testclient import TestClient
+from typing import Any
+from pytest import MonkeyPatch
+
 from db.models.UserReview import UserReview
 from db.models.Book import Book
 from server import app
-from typing import Any
-from pytest import MonkeyPatch
+
 
 def test_recommendations_endpoint_with_history():
     """User with history should receive recommendations (non-empty response)."""

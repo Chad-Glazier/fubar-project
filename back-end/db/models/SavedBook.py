@@ -1,7 +1,7 @@
 import uuid
+from typing import Self
 
 from db.persisted_model import PersistedModel
-
 
 class SavedBook(PersistedModel):
     id: str
@@ -22,9 +22,9 @@ class SavedBook(PersistedModel):
 
     @classmethod
     def remove_for_user(cls, user_id: str, book_id: str) -> None:
-        for item in list(cls.get_where(user_id=user_id, book_id=book_id)):
-            item.delete()
+        for record in cls.get_where(user_id=user_id, book_id=book_id):
+            record.delete()
 
     @classmethod
-    def get_saved_for_user(cls, user_id: str):
+    def get_saved_for_user(cls, user_id: str) -> list[Self]:
         return list(cls.get_where(user_id=user_id))

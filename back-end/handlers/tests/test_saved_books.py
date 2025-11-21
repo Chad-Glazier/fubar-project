@@ -2,9 +2,9 @@ from typing import Any
 from fastapi.testclient import TestClient
 
 from server import app
-from db.User import User
-from db.Book import Book
-from db.SavedBook import SavedBook
+from db.models.User import User
+from db.models.Book import Book
+from db.models.SavedBook import SavedBook
 
 client = TestClient(app)
 
@@ -33,6 +33,7 @@ def setup_data():
 		authors=["Author"],
 		description="desc",
 	)
+     
 	return user, book
 
 def test_save_book():
@@ -47,7 +48,6 @@ def test_save_book():
     assert saved_items[0].book_id == book.id
     
     cleanup()
-
 
 def test_get_saved_books():
     user, book = setup_data()

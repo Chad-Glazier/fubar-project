@@ -1,14 +1,15 @@
 from fastapi.testclient import TestClient
+
 from db.models.Book import Book
 from db.models.UserReview import UserReview
-from db.persisted_model import PersistedModel
+
 from server import app
 
 def test_book_details_shows_metadata_and_reviews():
     client = TestClient(app)
 
     # create book and reviews
-    tmp_records: list[PersistedModel] = [
+    tmp_records: list[UserReview | Book] = [
         Book(id="bd1", title="Details Book", authors=["Auth"]),
         UserReview(id="rbd1", user_id="user1", book_id="bd1", rating=8),
         UserReview(id="rbd2", user_id="user2", book_id="bd1", rating=10)
