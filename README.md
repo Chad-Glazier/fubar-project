@@ -38,6 +38,13 @@ Now you can run the server:
 fastapi dev server.py
 ```
 
+## Importing the Dataset
+
+To import the dataset to the application database, follow these steps:
+1) Download the dataset from [here](https://www.kaggle.com/datasets/ruchi798/bookcrossing-dataset?resource=download).
+2) Decompress/extract the files.
+3) Finally, ensure that the virtual environment is active and that your current working directory is `back-end`, then run the `import_data.py` script.
+
 ## Testing
 
 To run the test suite, just run

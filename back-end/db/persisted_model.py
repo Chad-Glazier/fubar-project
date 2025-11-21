@@ -152,7 +152,7 @@ class PersistedModel(BaseModel):
 		self.__class__._mutex.release()
 
 		return not prev_record_found
-	
+		
 	@classmethod
 	def create(cls, **fields: Any) -> Self:
 		"""
@@ -251,16 +251,35 @@ class PersistedModel(BaseModel):
 	def _read_csv_file(cls) -> TextIOWrapper:
 		file_path = Path(cls.data_dir + "/" + cls.__name__ + ".csv")
 		if file_path.exists():
-			return file_path.open("r", encoding = "utf-8")
+			return file_path.open("r", encoding = "latin-1")
 
 		file_path.parent.mkdir(
 			parents = True, 
 			exist_ok = True,
 		)
-		with file_path.open("a+", encoding = "utf-8") as w:
+		with file_path.open("a+", encoding = "latin-1") as w:
 			w.write(cls._to_csv_header() + "\n")
 		
-		return file_path.open("r", encoding = "utf-8")
+		return file_path.open("r", encoding = "latin-1")
+	
+	@classmethod
+	def _append_csv_file(cls) -> TextIOWrapper:
+		"""
+		Open a file writer to append to the raw CSV file.
+		"""
+		file_path = Path(cls.data_dir + "/" + cls.__name__ + ".csv")
+		if file_path.exists():
+			return file_path.open("a", encoding = "latin-1")
+
+		file_path.parent.mkdir(
+			parents = True, 
+			exist_ok = True,
+		)
+		with file_path.open("a+", encoding = "latin-1") as w:
+			w.write(cls._to_csv_header() + "\n")
+		
+		return file_path.open("a", encoding = "latin-1")
+
 
 	@classmethod
 	def _from_csv_row(cls, csv_row: str) -> Self:
