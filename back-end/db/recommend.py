@@ -10,7 +10,6 @@ def _build_user_item_map() -> Dict[str, Dict[str, float]]:
         users.setdefault(r.user_id, {})[r.book_id] = float(r.rating)
     return users
 
-
 def _cosine(u: Dict[str, float], v: Dict[str, float]) -> float:
     common = set(u.keys()) & set(v.keys())
     if not common:
@@ -21,7 +20,6 @@ def _cosine(u: Dict[str, float], v: Dict[str, float]) -> float:
     if nu == 0.0 or nv == 0.0:
         return 0.0
     return dot / (nu * nv)
-
 
 def recommend_for_user(user_id: str, k_neighbors: int = 5, n_recs: int = 10) -> List[Tuple[str, float]]:
     """Return top-n (book_id, score) recommendations for user_id using user-user CF.

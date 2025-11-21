@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 from fastapi import APIRouter, HTTPException, Query
 
 from db.recommend import recommend_for_user
@@ -6,14 +6,13 @@ from db.models.Book import Book
 
 recommend_router = APIRouter(prefix="/recommendations", tags=["recommendations"])
 
-
 @recommend_router.get("/{user_id}")
-async def get_recommendations(user_id: str, n: int = Query(10), k: int = Query(5)) -> List:
+async def get_recommendations(user_id: str, n: int = Query(10), k: int = Query(5)) -> List[Any]:
     recs = recommend_for_user(user_id, k_neighbors=k, n_recs=n)
     if not recs:
         raise HTTPException(status_code=404, detail="No recommendations available")
 
-    out = []
+    out: List[Any] = []
     for book_id, score in recs:
         book = Book.get_by_primary_key(book_id)
         if book:

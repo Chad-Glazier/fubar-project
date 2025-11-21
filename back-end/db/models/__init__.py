@@ -1,5 +1,5 @@
-from .User import User, UserCredentials
+from .User import User
 from .Book import Book
 from .UserReview import UserReview
 
-__all__ = ["User", "UserCredentials", "Book", "UserReview"]
+__all__ = ["User", "Book", "UserReview"]

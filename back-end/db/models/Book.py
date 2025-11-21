@@ -1,7 +1,6 @@
 from db.persisted_model import PersistedModel
 from typing import Dict, Optional
 import httpx
-from urllib.parse import quote as _quote
 import uuid
 import os
 from dotenv import load_dotenv

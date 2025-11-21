@@ -4,7 +4,7 @@ from handlers.user import RegistrationDetails, UserCredentials
 from http import HTTPStatus
 
 from handlers.user import user_router
-from db.user_models import User, UserSession, TOKEN_NAME
+from db.models.User import User, UserSession, TOKEN_NAME
 
 app = FastAPI()
 app.include_router(user_router)
