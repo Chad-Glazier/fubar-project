@@ -138,3 +138,29 @@ async def post_review(
 
 	return new_review
 
+# 
+# Let users delete their review for a book. (Idempotent)
+#
+@review_router.delete("/{book_id}")
+async def delete_review(book_id: str, req: Request):
+	user = User.from_session(req)
+	if user == None:
+		raise HTTPException(
+			status_code = HTTPStatus.UNAUTHORIZED,
+			detail = "You must be logged in to delete a review."
+		)
+	
+	book = Book.get_by_primary_key(book_id)
+	if book == None:
+		raise HTTPException(
+			status_code = 404,
+			detail = f"No book with ID {book_id} was found."
+		)
+	
+	review = UserReview.get_first_where(
+		user_id = user.id,
+		book_id = book.id
+	)
+	if review != None:
+		review.delete()
+
