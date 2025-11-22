@@ -7,6 +7,7 @@ search_router = APIRouter(prefix="/search", tags=["search"])
 
 DEFAULT_LIMIT = 50
 
+
 def _matches(book: Book, author: str | None, year: int | None) -> bool:
     if author is not None:
         if not book.authors or author not in book.authors:
@@ -17,13 +18,14 @@ def _matches(book: Book, author: str | None, year: int | None) -> bool:
             return False
     return True
 
+
 @search_router.get("/", response_model=List[Book])
 async def search_books(
     author: str | None = Query(None),
     year: int | None = Query(None),
     rating_min: float | None = Query(None),
     rating_max: float | None = Query(None),
-    limit: int = Query(DEFAULT_LIMIT)
+    limit: int = Query(DEFAULT_LIMIT),
 ):
     results: Generator[Book, None, None] = Book.get_all()
 
