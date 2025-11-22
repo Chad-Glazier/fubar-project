@@ -33,41 +33,19 @@ async def search_books(
 	final_results: List[Book] = []
 	result_count = 0
 
-	if rating_min and rating_max:
-		for book in results:
-			if book.average_rating is None:
-				continue
-			if book.average_rating >= rating_min and book.average_rating <= rating_max:
-				final_results.append(book)
-				result_count += 1
-				if result_count >= limit:
-					break
-	elif rating_min:
-		for book in results:
-			if book.average_rating is None:
-				continue
-			if book.average_rating >= rating_min:
-				final_results.append(book)
-				result_count += 1
-				if result_count >= limit:
-					break
-	elif rating_max:
-		for book in results:
-			if book.average_rating is None:
-				continue
-			if book.average_rating <= rating_max:
-				final_results.append(book)
-				result_count += 1
-				if result_count >= limit:
-					break
-	else:
-		for book in results:
-			final_results.append(book)
-			result_count += 1
-			if result_count >= limit:
-				break
+	for book in results:
+		if rating_min is not None and (book.average_rating is None or book.average_rating < rating_min):
+			continue
+		if rating_max is not None and (book.average_rating is None or book.average_rating > rating_max):
+			continue
+
+		final_results.append(book)
+		result_count += 1
+
+		if result_count >= limit:
+			break
 
 	if len(final_results) == 0:
 		raise HTTPException(status_code = 404, detail = "No matching books found.")
 
-	return results
+	return final_results

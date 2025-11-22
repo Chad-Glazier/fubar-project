@@ -84,6 +84,8 @@ Once the server is running on `http://localhost:8000`, you can call these endpoi
   ```
 - **Errors:** `404 Book not found` if the ID isn’t stored.
 
+If a requested book ID hasn’t been persisted yet, the server automatically calls the Google Books API to retrieve the metadata/cover, stores it locally, and then returns it to the caller.
+
 ### Book Recommendations
 - **Purpose:** Suggest books for a specific user.
 - **Request:** `GET /recommendations/{user_id}?n=10&k=5`
