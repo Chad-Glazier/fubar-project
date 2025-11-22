@@ -31,6 +31,9 @@ async def search_books(
 	for book in results:
 		if not _matches(book, author, year):
 			continue
+	result_count = 0
+
+	for book in results:
 		if rating_min is not None and (book.average_rating is None or book.average_rating < rating_min):
 			continue
 		if rating_max is not None and (book.average_rating is None or book.average_rating > rating_max):
@@ -41,6 +44,12 @@ async def search_books(
 			break
 
 	if not final_results:
+		result_count += 1
+
+		if result_count >= limit:
+			break
+
+	if len(final_results) == 0:
 		raise HTTPException(status_code = 404, detail = "No matching books found.")
 
 	return final_results
