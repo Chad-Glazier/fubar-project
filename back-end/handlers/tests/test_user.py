@@ -1,26 +1,25 @@
-from fastapi.testclient import TestClient
 from http import HTTPStatus
 
 from handlers.user import UserDetails, RegistrationDetails, UserCredentials
 from db.models.User import User, UserSession, TOKEN_NAME
+from fastapi.testclient import TestClient
 from server import app
 
 def test_user_register_login_logout():
-	
-	new_client = TestClient(app)
+	with TestClient(app) as new_client:
 
-	new_details = RegistrationDetails(
-		display_name = "jimi_hendrix",
-		email = "jhendrix42@gmail.com",
-		password = "stratocaster123"
-	)
+		new_details = RegistrationDetails(
+			display_name = "jimi_hendrix",
+			email = "jhendrix42@gmail.com",
+			password = "stratocaster123"
+		)
 
-	resp = new_client.post(
-		"/user",
-		content = new_details.model_dump_json()
-	)
+		resp = new_client.post(
+			"/user",
+			content = new_details.model_dump_json()
+		)
 
-	assert resp.status_code == HTTPStatus.CREATED
+		assert resp.status_code == HTTPStatus.CREATED
 
 	# Confirm that the user exists in the database
 
