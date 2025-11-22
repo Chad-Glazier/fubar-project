@@ -1,4 +1,5 @@
 from typing import Callable
+
 from fastapi.testclient import TestClient
 
 from server import app
@@ -16,6 +17,7 @@ def with_temp_books(func: Callable[[TestClient], None]):
         finally:
             Book._drop_table()
             Book.data_dir = original_dir
+
     return wrapper
 
 
