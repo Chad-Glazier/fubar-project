@@ -1,39 +1,45 @@
-from typing import List, Any
+from typing import List
 from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
 
 from db.recommend import recommend_for_user
 from db.models.Book import Book
 
+
+class RecommendationItem(BaseModel):
+	book: Book | None = None
+	book_id: str | None = None
+	score: float
+
+
 recommend_router = APIRouter(prefix="/recommendations", tags=["recommendations"])
 
-@recommend_router.get("/{user_id}")
-async def get_recommendations(user_id: str, n: int = Query(10), k: int = Query(5)) -> List[Any]:
-    recs = recommend_for_user(user_id, k_neighbors=k, n_recs=n)
-    if not recs:
-        raise HTTPException(status_code=404, detail="No recommendations available")
 
-    out: List[Any] = []
-    for book_id, score in recs:
-        book = Book.get_by_primary_key(book_id)
-        if book:
-            out.append({"book": book, "score": score})
-        else:
-            # Attempt to enrich from Google Books API using the book_id as a query
-            try:
-                enriched = Book.fetch_from_google_books(book_id)
-                if enriched:
-                    # persist the enriched book so future requests are local
-                    try:
-                        enriched.post()
-                    except Exception:
-                        # if persisting fails, continue without blocking the response
-                        pass
-                    out.append({"book": enriched, "score": score})
-                    continue
-            except Exception:
-                # ignore enrichment errors and fall back to returning id
-                pass
+@recommend_router.get("/{user_id}", response_model=List[RecommendationItem])
+async def get_recommendations(user_id: str, n: int = Query(10), k: int = Query(5)) -> List[RecommendationItem]:
+	recs = recommend_for_user(user_id, k_neighbors=k, n_recs=n)
+	if not recs:
+		raise HTTPException(status_code=404, detail="No recommendations available")
 
-            out.append({"book_id": book_id, "score": score})
+	results: List[RecommendationItem] = []
+	for book_id, score in recs:
+		book = Book.get_by_primary_key(book_id)
+		if book:
+			results.append(RecommendationItem(book=book, score=score))
+			continue
 
-    return out
+		try:
+			enriched = Book.fetch_from_google_books(book_id)
+			if enriched:
+				try:
+					enriched.post()
+				except Exception:
+					pass
+				results.append(RecommendationItem(book=enriched, score=score))
+				continue
+		except Exception:
+			pass
+
+		results.append(RecommendationItem(book_id=book_id, score=score))
+
+	return results
