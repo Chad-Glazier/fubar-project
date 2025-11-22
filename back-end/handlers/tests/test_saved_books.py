@@ -1,16 +1,20 @@
 from typing import Any
 from fastapi.testclient import TestClient
+from secrets import token_urlsafe
+from time import time_ns
 
 from server import app
-from db.models.User import User
+from db.models.User import User, UserSession, TOKEN_NAME, TOKEN_DURATION_NS
 from db.models.Book import Book
 from db.models.SavedBook import SavedBook
-from handlers.user import RegistrationDetails
 
 client = TestClient(app)
 
 def cleanup():
-	client.delete("/user/session")
+	client.cookies.clear()
+
+	for session in list(UserSession.get_all()):
+		session.delete()
 
 	tmp_user = User.get_first_where(email = "test@example.com")
 	if tmp_user != None:
@@ -28,13 +32,12 @@ def cleanup():
 def setup_data():
 	cleanup()
 
-	user_details = RegistrationDetails(
+	user = User.create(
+		id = "u_test",
 		display_name= "Test User",
 		email = "test@example.com",
 		password = "secret"
 	)
-	
-	client.post("/user", content = user_details.model_dump_json())
 	
 	book = Book.create(
 		id="b_test",
@@ -43,11 +46,26 @@ def setup_data():
 		description="desc",
 	)
 
-	user = User.get_first_where(email = "test@example.com")
-	if user == None:
-		raise Exception("Error creating user for test.")
-		 
+	session_token = token_urlsafe(32)
+	UserSession(
+		session_id = session_token,
+		user_id = user.id,
+		original_creation_timestamp = time_ns(),
+		expiration_timestamp = time_ns() + TOKEN_DURATION_NS
+	).post()
+	client.cookies.set(TOKEN_NAME, session_token)
+
 	return user, book
+
+def authenticate_user(user: User) -> None:
+	session_token = token_urlsafe(32)
+	UserSession(
+		session_id = session_token,
+		user_id = user.id,
+		original_creation_timestamp = time_ns(),
+		expiration_timestamp = time_ns() + TOKEN_DURATION_NS
+	).post()
+	client.cookies.set(TOKEN_NAME, session_token)
 
 def test_save_book():
 	user, book = setup_data()
@@ -90,3 +108,28 @@ def test_unsave_book():
 	
 	cleanup()
 
+def test_save_requires_authentication():
+	user, book = setup_data()
+	client.cookies.clear()  # remove the session set by setup_data
+
+	resp = client.put(f"/saved_book/{book.id}")
+	assert resp.status_code == 401
+	assert resp.json()["detail"] == "You must be logged in to save books."
+
+	cleanup()
+
+def test_save_missing_book_returns_404():
+	cleanup()
+	user = User.create(
+		id = "u_test",
+		display_name = "Test User",
+		email = "test@example.com",
+		password = "secret",
+	)
+	authenticate_user(user)
+
+	resp = client.put("/saved_book/nonexistent-book")
+	assert resp.status_code == 404
+	assert resp.json()["detail"] == "Book not found"
+
+	cleanup()
