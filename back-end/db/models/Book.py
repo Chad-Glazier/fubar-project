@@ -28,6 +28,12 @@ class Book(PersistedModel):
         if not query:
             return None
 
+        cached = BookMetadataCache.get_by_primary_key(query)
+        if cached is not None:
+            book = cls.get_by_primary_key(cached.book_id)
+            if book is not None:
+                return book
+            cached.delete()
         # If the query itself is already a stored book id, return it immediately.
         existing_book = cls.get_by_primary_key(query)
         if existing_book is not None:
@@ -76,12 +82,13 @@ class Book(PersistedModel):
                 except Exception:
                     pass
 
-            # validate/create model instance
             if hasattr(cls, "model_validate"):
                 book = cls.model_validate(fields)
             else:
                 book = cls(**fields)
 
+            book.put()
+            BookMetadataCache(query=query, book_id=book.id).put()
             # persist and cache the book for future lookups
             book.put()
             BookMetadataCache(query = query, book_id = book.id).put()
