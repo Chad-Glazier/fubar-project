@@ -91,6 +91,8 @@ Once the server is running on `http://localhost:8000`, you can call these endpoi
 - **Response:** Array of `Book` objects (same schema as above). The `limit` parameter caps how many rows are returned.
 - **Errors:** `404 No books available` when the catalog is empty.
 
+If a requested book ID hasn’t been persisted yet, the server automatically calls the Google Books API to retrieve the metadata/cover, stores it locally, and then returns it to the caller.
+
 ### Book Recommendations
 - **Purpose:** Suggest books for a specific user.
 - **Request:** `GET /recommendations/{user_id}?n=10&k=5`
