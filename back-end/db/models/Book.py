@@ -1,4 +1,5 @@
 from db.persisted_model import PersistedModel
+from db.models.BookMetadataCache import BookMetadataCache
 from typing import Dict, Optional
 import httpx
 import uuid
@@ -26,6 +27,13 @@ class Book(PersistedModel):
         """
         if not query:
             return None
+
+        cached = BookMetadataCache.get_by_primary_key(query)
+        if cached is not None:
+            book = cls.get_by_primary_key(cached.book_id)
+            if book is not None:
+                return book
+            cached.delete()
 
         params = {"q": query, "maxResults": max_results}
         # prefer explicit API key from environment
@@ -62,10 +70,14 @@ class Book(PersistedModel):
                 except Exception:
                     pass
 
-            # validate/create model instance
             if hasattr(cls, "model_validate"):
-                return cls.model_validate(fields)
-            return cls(**fields)
+                book = cls.model_validate(fields)
+            else:
+                book = cls(**fields)
+
+            book.put()
+            BookMetadataCache(query=query, book_id=book.id).put()
+            return book
 
         except Exception:
             return None
