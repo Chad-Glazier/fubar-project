@@ -1,3 +1,6 @@
+from contextlib import contextmanager
+
+from fastapi.testclient import TestClient
 from pytest import MonkeyPatch
 
 from db.models.UserReview import UserReview
@@ -9,6 +12,24 @@ from .test_utils import client_with_temp_app_state
 
 def test_recommendations_endpoint_cold_start():
     with client_with_temp_app_state(include_reviews=True) as client:
+
+@contextmanager
+def _test_client_with_temp_data():
+    client = TestClient(app)
+    original_dir = Book.data_dir
+    Book.data_dir = "./data/testing-data"
+    Book._drop_table()
+    UserReview._drop_table()
+    try:
+        yield client
+    finally:
+        Book._drop_table()
+        UserReview._drop_table()
+        Book.data_dir = original_dir
+
+
+def test_recommendations_endpoint_cold_start():
+    with _test_client_with_temp_data() as client:
         tmp_records: list[PersistedModel] = [
             Book(id="b1", title="Book One", authors=["A"]),
             Book(id="b2", title="Book Two", authors=["B"]),
@@ -27,6 +48,7 @@ def test_recommendations_endpoint_cold_start():
 
 def test_recommendations_enrichment_failure_returns_id(monkeypatch: MonkeyPatch):
     with client_with_temp_app_state(include_reviews=True) as client:
+    with _test_client_with_temp_data() as client:
         Book(id="known", title="Known", authors=["Author"]).put()
         # target user has only rated "known"
         UserReview(id="r1", user_id="target", book_id="known", rating=10).put()

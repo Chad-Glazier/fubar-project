@@ -34,6 +34,13 @@ def _payload(book_id: str = "vol-1") -> dict[str, Any]:
                 },
             }
         ],
+                    "title": f"Remote {book_id}",
+                    "authors": ["Fetcher"],
+                    "description": "Desc",
+                    "imageLinks": {"thumbnail": "http://example.com/thumb"},
+                },
+            }
+        ]
     }
 
 
