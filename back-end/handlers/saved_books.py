@@ -7,14 +7,18 @@ from db.models.SavedBook import SavedBook
 
 saved_book_router = APIRouter(prefix = "/saved_book")
 
-@saved_book_router.put("/{book_id}")
-def save_book(book_id: str, req: Request):
+def _require_user(req: Request, action: str) -> User:
 	user = User.from_session(req)
 	if user == None:
 		raise HTTPException(
 			status_code = HTTPStatus.UNAUTHORIZED,
-			detail = "You must be logged in to save books."
+			detail = f"You must be logged in to {action} books."
 		)
+	return user
+
+@saved_book_router.put("/{book_id}")
+def save_book(book_id: str, req: Request):
+	user = _require_user(req, "save")
 
 	# Validate book
 	if not Book.exists(book_id):
@@ -25,23 +29,13 @@ def save_book(book_id: str, req: Request):
 
 @saved_book_router.delete("/{book_id}")
 def unsave_book(book_id: str, req: Request):
-	user = User.from_session(req)
-	if user == None:
-		raise HTTPException(
-			status_code = HTTPStatus.UNAUTHORIZED,
-			detail = "You must be logged in to unsave books."
-		)
+	user = _require_user(req, "unsave")
 	
 	SavedBook.remove_for_user(user.id, book_id)
 
 @saved_book_router.get("/")
 def get_saved_books(req: Request) -> list[Book]:
-	user = User.from_session(req)
-	if user == None:
-		raise HTTPException(
-			status_code = HTTPStatus.UNAUTHORIZED,
-			detail = "You must be logged in to view saved books."
-		)
+	user = _require_user(req, "view saved")
 
 	saved_books: list[Book] = []
 	for record in SavedBook.get_where(user_id = user.id):
