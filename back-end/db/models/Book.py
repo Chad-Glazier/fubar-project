@@ -49,35 +49,37 @@ class Book(PersistedModel):
             if not items:
                 return None
 
-            volume = items[0]
-            info = volume.get("volumeInfo", {})
-
-            fields: dict = {}
-            fields["id"] = volume.get("id") or str(uuid.uuid4())
-            fields["title"] = info.get("title")
-            fields["authors"] = info.get("authors") or []
-            fields["categories"] = info.get("categories")
-            fields["description"] = info.get("description")
-            fields["imageLinks"] = info.get("imageLinks")
-            avg = info.get("averageRating")
-            fields["average_rating"] = float(avg) if avg is not None else None
-
-            # publishedDate could be YYYY or YYYY-MM-DD
-            pub = info.get("publishedDate")
-            if pub:
-                try:
-                    fields["year"] = int(str(pub).split("-")[0])
-                except Exception:
-                    pass
-
-            if hasattr(cls, "model_validate"):
-                book = cls.model_validate(fields)
-            else:
-                book = cls(**fields)
-
-            book.put()
+            book = cls._create_from_volume(items[0])
             BookMetadataCache(query=query, book_id=book.id).put()
             return book
 
         except Exception:
             return None
+
+    @classmethod
+    def _create_from_volume(cls, volume: dict) -> "Book":
+        info = volume.get("volumeInfo", {})
+        fields: dict = {}
+        fields["id"] = volume.get("id") or str(uuid.uuid4())
+        fields["title"] = info.get("title")
+        fields["authors"] = info.get("authors") or []
+        fields["categories"] = info.get("categories")
+        fields["description"] = info.get("description")
+        fields["imageLinks"] = info.get("imageLinks")
+        avg = info.get("averageRating")
+        fields["average_rating"] = float(avg) if avg is not None else None
+
+        pub = info.get("publishedDate")
+        if pub:
+            try:
+                fields["year"] = int(str(pub).split("-")[0])
+            except Exception:
+                pass
+
+        if hasattr(cls, "model_validate"):
+            book = cls.model_validate(fields)
+        else:
+            book = cls(**fields)
+
+        book.put()
+        return book
