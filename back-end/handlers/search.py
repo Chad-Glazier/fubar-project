@@ -26,7 +26,6 @@ async def search_books(
     rating_min: float | None = Query(None),
     rating_max: float | None = Query(None),
     limit: int = Query(DEFAULT_LIMIT),
-    limit: int = Query(DEFAULT_LIMIT)
 ):
     results: Generator[Book, None, None] = Book.get_all()
 

@@ -27,13 +27,6 @@ def _payload(book_id: str = "vol-1") -> dict[str, Any]:
             {
                 "id": book_id,
                 "volumeInfo": {
-                    "title": "Test Book",
-                    "authors": ["Tester"],
-                    "description": "Desc",
-                    "imageLinks": {"thumbnail": "http://example.com/image"},
-                },
-            }
-        ],
                     "title": f"Remote {book_id}",
                     "authors": ["Fetcher"],
                     "description": "Desc",
