@@ -57,6 +57,16 @@ def setup_data():
 
 	return user, book
 
+def authenticate_user(user: User) -> None:
+	session_token = token_urlsafe(32)
+	UserSession(
+		session_id = session_token,
+		user_id = user.id,
+		original_creation_timestamp = time_ns(),
+		expiration_timestamp = time_ns() + TOKEN_DURATION_NS
+	).post()
+	client.cookies.set(TOKEN_NAME, session_token)
+
 def test_save_book():
 	user, book = setup_data()
 
@@ -96,4 +106,30 @@ def test_unsave_book():
 	saved_items = SavedBook.get_saved_for_user(user.id)
 	assert len(saved_items) == 0
 	
+	cleanup()
+
+def test_save_requires_authentication():
+	user, book = setup_data()
+	client.cookies.clear()  # remove the session set by setup_data
+
+	resp = client.put(f"/saved_book/{book.id}")
+	assert resp.status_code == 401
+	assert resp.json()["detail"] == "You must be logged in to save books."
+
+	cleanup()
+
+def test_save_missing_book_returns_404():
+	cleanup()
+	user = User.create(
+		id = "u_test",
+		display_name = "Test User",
+		email = "test@example.com",
+		password = "secret",
+	)
+	authenticate_user(user)
+
+	resp = client.put("/saved_book/nonexistent-book")
+	assert resp.status_code == 404
+	assert resp.json()["detail"] == "Book not found"
+
 	cleanup()
