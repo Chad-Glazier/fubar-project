@@ -125,3 +125,14 @@ Once the server is running on `http://localhost:8000`, you can call these endpoi
      Error: `404 User not found` if that user doesn’t exist.
 
 Use these descriptions as your quick reference for the API—no background in the codebase required.
+
+## Deploying with Docker
+
+To run the backend in a container:
+
+```sh
+docker build -t fubar-api .
+docker run -p 8000:8000 --env-file back-end/.env fubar-api
+```
+
+This builds the backend image and exposes the FastAPI app on port 8000. Provide a `.env` file (see `back-end/.env.example`) if you need API keys or other settings.
