@@ -34,6 +34,18 @@ class Book(PersistedModel):
             if book is not None:
                 return book
             cached.delete()
+        # If the query itself is already a stored book id, return it immediately.
+        existing_book = cls.get_by_primary_key(query)
+        if existing_book is not None:
+            return existing_book
+
+        cache_entry = BookMetadataCache.get_by_primary_key(query)
+        if cache_entry is not None:
+            cached_book = cls.get_by_primary_key(cache_entry.book_id)
+            if cached_book is not None:
+                return cached_book
+            # If cache is stale, remove entry and continue to fetch fresh data.
+            cache_entry.delete()
 
         params = {"q": query, "maxResults": max_results}
         # prefer explicit API key from environment
@@ -77,6 +89,10 @@ class Book(PersistedModel):
 
             book.put()
             BookMetadataCache(query=query, book_id=book.id).put()
+            # persist and cache the book for future lookups
+            book.put()
+            BookMetadataCache(query = query, book_id = book.id).put()
+
             return book
 
         except Exception:
