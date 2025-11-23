@@ -1,4 +1,5 @@
 from typing import Callable
+
 from fastapi.testclient import TestClient
 
 from server import app
@@ -16,6 +17,7 @@ def with_temp_books(func: Callable[[TestClient], None]):
         finally:
             Book._drop_table()
             Book.data_dir = original_dir
+
     return wrapper
 
 
@@ -23,7 +25,6 @@ def with_temp_books(func: Callable[[TestClient], None]):
 def test_search_returns_results_without_auth(client: TestClient):
     Book(id="s1", title="Alpha", authors=["Author"], average_rating=8).put()
     Book(id="s2", title="Beta", authors=["Author"], average_rating=6).put()
-
     resp = client.get("/search?limit=1&rating_min=7")
     assert resp.status_code == 200
     data = resp.json()

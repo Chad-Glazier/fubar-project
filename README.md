@@ -81,8 +81,17 @@ Once the server is running on `http://localhost:8000`, you can call these endpoi
       { "id": "r2", "rating": 10 }
     ]
   }
-  ```
+```
 - **Errors:** `404 Book not found` if the ID isn’t stored.
+- **Note:** When the requested ID isn’t in our CSV yet, the API fetches metadata and covers from Google Books, persists it, and then returns it.
+
+### Browse Books
+- **Purpose:** Let guests page through available titles.
+- **Request:** `GET /books?limit=50`
+- **Response:** Array of `Book` objects (same schema as above). The `limit` parameter caps how many rows are returned.
+- **Errors:** `404 No books available` when the catalog is empty.
+
+If a requested book ID hasn’t been persisted yet, the server automatically calls the Google Books API to retrieve the metadata/cover, stores it locally, and then returns it to the caller.
 
 ### Book Recommendations
 - **Purpose:** Suggest books for a specific user.
@@ -101,15 +110,15 @@ Once the server is running on `http://localhost:8000`, you can call these endpoi
 
 ### Search
 - **Purpose:** Find books whose title or authors match a keyword.
-- **Request:** `GET /search?query=term&limit=20`
+- **Request:** `GET /search?query=term&limit=20&rating_min=7&rating_max=9`
 - **Response:**
   ```json
   [
     { "id": "b1", "title": "Learning FastAPI", "authors": ["Ada"] },
     { "id": "b2", "title": "Fast Recipes", "authors": ["Turing"] }
   ]
-  ```
-- **Errors:** `404 No books found` when nothing matches or the catalog is empty.
+```
+- **Notes:** `rating_min`/`rating_max` filters are inclusive; the endpoint returns `404 No books found` when nothing matches.
 
 ### Saved Books
 - **Purpose:** Let users bookmark books.
@@ -119,10 +128,11 @@ Once the server is running on `http://localhost:8000`, you can call these endpoi
   3. `GET /users/{user_id}/saved` → lists saved books. Response:
      ```json
      [
-       { "id": "sb1", "user_id": "u1", "book_id": "b2" }
-     ]
-     ```
+     { "id": "sb1", "user_id": "u1", "book_id": "b2" }
+    ]
+    ```
      Error: `404 User not found` if that user doesn’t exist.
+- **Auth:** All saved-book endpoints require a valid session cookie; otherwise they return `401`.
 
 Use these descriptions as your quick reference for the API—no background in the codebase required.
 

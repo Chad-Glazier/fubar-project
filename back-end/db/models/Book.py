@@ -34,6 +34,18 @@ class Book(PersistedModel):
             if book is not None:
                 return book
             cached.delete()
+        # If the query itself is already a stored book id, return it immediately.
+        existing_book = cls.get_by_primary_key(query)
+        if existing_book is not None:
+            return existing_book
+
+        cache_entry = BookMetadataCache.get_by_primary_key(query)
+        if cache_entry is not None:
+            cached_book = cls.get_by_primary_key(cache_entry.book_id)
+            if cached_book is not None:
+                return cached_book
+            # If cache is stale, remove entry and continue to fetch fresh data.
+            cache_entry.delete()
 
         params = {"q": query, "maxResults": max_results}
         # prefer explicit API key from environment
@@ -49,35 +61,41 @@ class Book(PersistedModel):
             if not items:
                 return None
 
-            volume = items[0]
-            info = volume.get("volumeInfo", {})
-
-            fields: dict = {}
-            fields["id"] = volume.get("id") or str(uuid.uuid4())
-            fields["title"] = info.get("title")
-            fields["authors"] = info.get("authors") or []
-            fields["categories"] = info.get("categories")
-            fields["description"] = info.get("description")
-            fields["imageLinks"] = info.get("imageLinks")
-            avg = info.get("averageRating")
-            fields["average_rating"] = float(avg) if avg is not None else None
-
-            # publishedDate could be YYYY or YYYY-MM-DD
-            pub = info.get("publishedDate")
-            if pub:
-                try:
-                    fields["year"] = int(str(pub).split("-")[0])
-                except Exception:
-                    pass
-
-            if hasattr(cls, "model_validate"):
-                book = cls.model_validate(fields)
-            else:
-                book = cls(**fields)
-
-            book.put()
+            book = cls._create_from_volume(items[0])
             BookMetadataCache(query=query, book_id=book.id).put()
+            # persist and cache the book for future lookups
+            book.put()
+            BookMetadataCache(query = query, book_id = book.id).put()
+
             return book
 
         except Exception:
             return None
+
+    @classmethod
+    def _create_from_volume(cls, volume: dict) -> "Book":
+        info = volume.get("volumeInfo", {})
+        fields: dict = {}
+        fields["id"] = volume.get("id") or str(uuid.uuid4())
+        fields["title"] = info.get("title")
+        fields["authors"] = info.get("authors") or []
+        fields["categories"] = info.get("categories")
+        fields["description"] = info.get("description")
+        fields["imageLinks"] = info.get("imageLinks")
+        avg = info.get("averageRating")
+        fields["average_rating"] = float(avg) if avg is not None else None
+
+        pub = info.get("publishedDate")
+        if pub:
+            try:
+                fields["year"] = int(str(pub).split("-")[0])
+            except Exception:
+                pass
+
+        if hasattr(cls, "model_validate"):
+            book = cls.model_validate(fields)
+        else:
+            book = cls(**fields)
+
+        book.put()
+        return book
