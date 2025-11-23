@@ -20,13 +20,14 @@ def _matches(book: Book, author: str | None, year: int | None) -> bool:
 
 
 def _matches_rating(book: Book, rating_min: float | None, rating_max: float | None) -> bool:
-	if rating_min is not None:
-		if book.average_rating is None or book.average_rating < rating_min:
-			return False
-	if rating_max is not None:
-		if book.average_rating is None or book.average_rating > rating_max:
-			return False
-	return True
+    if rating_min is not None:
+        if book.average_rating is None or book.average_rating < rating_min:
+            return False
+    if rating_max is not None:
+        if book.average_rating is None or book.average_rating > rating_max:
+            return False
+    return True
+
 
 @search_router.get("/", response_model=List[Book])
 async def search_books(
@@ -38,19 +39,11 @@ async def search_books(
 ):
     results: Generator[Book, None, None] = Book.get_all()
 
-	final_results: List[Book] = []
-	for book in results:
-		if not _matches(book, author, year):
-			continue
-		if not _matches_rating(book, rating_min, rating_max):
-			continue
     final_results: List[Book] = []
     for book in results:
         if not _matches(book, author, year):
             continue
-        if rating_min is not None and (book.average_rating is None or book.average_rating < rating_min):
-            continue
-        if rating_max is not None and (book.average_rating is None or book.average_rating > rating_max):
+        if not _matches_rating(book, rating_min, rating_max):
             continue
 
         final_results.append(book)
