@@ -15,6 +15,9 @@ review_router = APIRouter(prefix = "/review", tags = ["reviews"])
 #
 
 class ReviewDetails(BaseModel):
+	"""
+	This class contains the details about a review.
+	"""
 	rating: int = Field(..., ge=0, le=10)
 	text: str = Field(default = "")
 
@@ -28,6 +31,9 @@ class ReviewDetails(BaseModel):
 #
 @review_router.get("/{review_id}")
 async def get_review(review_id: str) -> UserReview:
+	"""
+	This endpoint is used to retrieve a specific review.
+	"""
 	review = UserReview.get_by_primary_key(review_id)
 	if review == None:
 		raise HTTPException(
@@ -48,7 +54,14 @@ async def get_reviews(
 	require_text: bool | None = None,
 	limit: int = 20
 ) -> list[UserReview]:
-	
+	"""
+	This endpoint is used to search for reviews, filtered by query parameters.
+	The `author_*` parameters refer to the author of the review, not the author
+	of the book being reviewed.
+
+	Note: If the `author_display_name` and `author_id` are both used, then the
+	`author_display_name` will be used and `author_id` will be disregarded.
+	"""
 	if author_display_name != None:
 		author = User.get_first_where(display_name = author_display_name)
 		if author == None:
@@ -108,6 +121,11 @@ async def post_review(
 	req: Request, 
 	resp: Response
 ) -> UserReview:
+	"""
+	This endpoint creates (or updates) the currently logged-in user's review
+	of a specific book. If a user is not logged in, then this returns a
+	`409 UNAUTHORIZED` error.
+	"""
 	user = User.from_session(req)
 	if user == None:
 		raise HTTPException(
@@ -143,6 +161,10 @@ async def post_review(
 #
 @review_router.delete("/{book_id}")
 async def delete_review(book_id: str, req: Request):
+	"""
+	Use this endpoint to delete the currently logged-in user's review of a
+	specified book.
+	"""
 	user = User.from_session(req)
 	if user == None:
 		raise HTTPException(

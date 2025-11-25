@@ -18,15 +18,24 @@ user_router = APIRouter(prefix = "/user", tags = ["users"])
 #
 
 class RegistrationDetails(BaseModel):
+	"""
+	The details necessary to register a new user.
+	"""
 	display_name: Annotated[str, StringConstraints(min_length=1)]
 	email: EmailStr
 	password: Annotated[str, StringConstraints(min_length=1)]
 
 class UserCredentials(BaseModel):
+	"""
+	The details necessary for a user to log in (i.e., create a session).
+	"""
 	email: EmailStr
 	password: Annotated[str, StringConstraints(min_length=1)]
 
 class UserDetails(BaseModel):
+	"""
+	The details about a user.
+	"""
 	display_name: str
 	email: str
 	reviews: list[UserReview]
@@ -42,6 +51,11 @@ class UserDetails(BaseModel):
 @user_router.post("/")
 async def register_user(user_details: RegistrationDetails, resp: Response) \
 	-> None:
+	"""
+	This endpoint is used to register a new user in the system. Note that the
+	new user's email and display name must both be unique. Upon a successful
+	registration, the user will be logged in (i.e., a session will be created).
+	"""
 	# Validate the data:
 	if User.get_first_where(email = user_details.email) != None:
 		raise HTTPException(
@@ -87,6 +101,11 @@ async def register_user(user_details: RegistrationDetails, resp: Response) \
 #
 @user_router.get("/")
 async def account_info(req: Request) -> UserDetails:
+	"""
+	This endpoint retrieves the information about whichever user is currently
+	logged in. If no user is logged in (there isn't an active session), then
+	this endpoint returns a `404 NOT FOUND` status.
+	"""
 	user = User.from_session(req)
 	if user == None:
 		raise HTTPException(
@@ -109,6 +128,9 @@ async def account_info(req: Request) -> UserDetails:
 #
 @user_router.delete("/session")
 async def log_out(req: Request, resp: Response) -> None:
+	"""
+	This endpoint is used to log a user out; i.e., delete the current session.
+	"""
 	session = UserSession.from_request(req)
 	if session == None:
 		return
@@ -120,6 +142,9 @@ async def log_out(req: Request, resp: Response) -> None:
 #
 @user_router.post("/session")
 async def log_in(credentials: UserCredentials, resp: Response):
+	"""
+	This endpoint is used to log a user in; i.e., create a session.
+	"""
 	user = User.get_first_where(email = credentials.email)
 
 	if user == None:
