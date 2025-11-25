@@ -15,6 +15,7 @@ def _test_client_with_temp_data():
     original_dir = Book.data_dir
     Book.data_dir = "./data/testing-data"
     Book._drop_table()
+    UserReview.data_dir = Book.data_dir
     UserReview._drop_table()
     try:
         yield client
@@ -22,6 +23,7 @@ def _test_client_with_temp_data():
         Book._drop_table()
         UserReview._drop_table()
         Book.data_dir = original_dir
+        UserReview.data_dir = original_dir
 
 
 def test_recommendations_endpoint_cold_start():

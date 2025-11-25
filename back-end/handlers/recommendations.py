@@ -11,9 +11,7 @@ class RecommendationItem(BaseModel):
 	book_id: str | None = None
 	score: float
 
-
 recommend_router = APIRouter(prefix="/recommendations", tags=["recommendations"])
-
 
 @recommend_router.get("/{user_id}", response_model=List[RecommendationItem])
 async def get_recommendations(user_id: str, n: int = Query(10), k: int = Query(5)) -> List[RecommendationItem]:
