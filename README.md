@@ -53,7 +53,7 @@ To run the test suite, just run
 pytest
 ```
 
-from within the virtual environment. 
+from within the virtual environment. Add the `--cov` flag for a coverage report.
 
 To add more unit tests, just create a new file that starts with `test_`. For 
 example, if you're testing the class you defined in `apple.py`, then make a 
@@ -62,79 +62,6 @@ test directory (i.e., a subpackage) named `tests`, then make a file
 start with `test_` and use `assert` statements to test conditions. When you run 
 `pytest`, it will search for such test functions and run them. For an example, 
 see [this file](back-end/db/tests/test_persisted_model.py).
-
-## API Overview
-
-Once the server is running on `http://localhost:8000`, you can call these endpoints. Each describes what it does, how to use it, and what to expect back.
-
-### Book Details
-- **Purpose:** Fetch one book plus its reviews.
-- **Request:** `GET /books/{book_id}` (no body)
-- **Response:**
-  ```json
-  {
-    "book": { "id": "bd1", "title": "Details Book", "authors": ["Auth"] },
-    "average_rating": 9.0,
-    "review_count": 2,
-    "reviews": [
-      { "id": "r1", "rating": 8 },
-      { "id": "r2", "rating": 10 }
-    ]
-  }
-```
-- **Errors:** `404 Book not found` if the ID isn’t stored.
-- **Note:** When the requested ID isn’t in our CSV yet, the API fetches metadata and covers from Google Books, persists it, and then returns it.
-
-### Browse Books
-- **Purpose:** Let guests page through available titles.
-- **Request:** `GET /books?limit=50`
-- **Response:** Array of `Book` objects (same schema as above). The `limit` parameter caps how many rows are returned.
-- **Errors:** `404 No books available` when the catalog is empty.
-
-If a requested book ID hasn’t been persisted yet, the server automatically calls the Google Books API to retrieve the metadata/cover, stores it locally, and then returns it to the caller.
-
-### Book Recommendations
-- **Purpose:** Suggest books for a specific user.
-- **Request:** `GET /recommendations/{user_id}?n=10&k=5`
-  - `n` (optional) → how many suggestions (default 10)
-  - `k` (optional) → how many neighbors to consider (default 5)
-- **Response:**
-  ```json
-  [
-    { "book": { "id": "b1", "title": "Brave New" }, "score": 0.92 },
-    { "book": { "id": "b2", "title": "Dune" }, "score": 0.81 }
-  ]
-  ```
-  If the book is missing locally, you may see `{ "book_id": "..." }` instead of the full object.
-- **Errors:** `404 No recommendations available` when we can’t compute anything for that user.
-
-### Search
-- **Purpose:** Find books whose title or authors match a keyword.
-- **Request:** `GET /search?query=term&limit=20&rating_min=7&rating_max=9`
-- **Response:**
-  ```json
-  [
-    { "id": "b1", "title": "Learning FastAPI", "authors": ["Ada"] },
-    { "id": "b2", "title": "Fast Recipes", "authors": ["Turing"] }
-  ]
-```
-- **Notes:** `rating_min`/`rating_max` filters are inclusive; the endpoint returns `404 No books found` when nothing matches.
-
-### Saved Books
-- **Purpose:** Let users bookmark books.
-- **Requests:**
-  1. `POST /users/{user_id}/saved/{book_id}` → saves a book. Response `{ "message": "Book saved" }`. Errors: `404 User not found`, `404 Book not found`.
-  2. `DELETE /users/{user_id}/saved/{book_id}` → removes a saved book. Response `{ "message": "Book removed" }`. Error: `404 User not found` if the user ID is unknown.
-  3. `GET /users/{user_id}/saved` → lists saved books. Response:
-     ```json
-     [
-     { "id": "sb1", "user_id": "u1", "book_id": "b2" }
-    ]
-    ```
-     Error: `404 User not found` if that user doesn’t exist.
-- **Auth:** All saved-book endpoints require a valid session cookie; otherwise they return `401`.
-
-Use these descriptions as your quick reference for the API—no background in the codebase required.
 
 ## Deploying with Docker
 
