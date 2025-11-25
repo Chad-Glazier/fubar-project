@@ -50,7 +50,7 @@ async def register_user(user_details: RegistrationDetails, resp: Response) \
 		)
 	if User.get_first_where(display_name = user_details.display_name) != None:
 		raise HTTPException(
-			status_code = 409,
+			status_code = HTTPStatus.CONFLICT,
 			detail = "That display name is taken."
 		)
 	
@@ -89,7 +89,10 @@ async def register_user(user_details: RegistrationDetails, resp: Response) \
 async def account_info(req: Request) -> UserDetails:
 	user = User.from_session(req)
 	if user == None:
-		raise HTTPException(status_code = 404, detail = "Not currently logged in.")
+		raise HTTPException(
+			status_code = HTTPStatus.NOT_FOUND, 
+			detail = "Not currently logged in."
+		)
 	
 	user_reviews: list[UserReview] = []
 	for review in UserReview.get_where(user_id = user.id):
