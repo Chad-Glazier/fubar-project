@@ -12,11 +12,14 @@ def client_with_temp_app_state(include_reviews: bool = False):
     Book.data_dir = "./data/testing-data"
     Book._drop_table()
     if include_reviews:
+        UserReview.data_dir = "./data/testing-data"
         UserReview._drop_table()
     try:
         yield client
     finally:
         Book._drop_table()
+        Book.data_dir = original_book_dir
         if include_reviews:
             UserReview._drop_table()
-        Book.data_dir = original_book_dir
+            UserReview.data_dir = original_book_dir
+

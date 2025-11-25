@@ -10,7 +10,7 @@ from db.models.UserReview import UserReview
 
 password_hasher = argon2.PasswordHasher()
 
-user_router = APIRouter(prefix = "/user")
+user_router = APIRouter(prefix = "/user", tags = ["users"])
 
 ###############################################################################
 # 

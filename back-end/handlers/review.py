@@ -6,7 +6,7 @@ from db.models.UserReview import UserReview
 from db.models.User import User
 from db.models.Book import Book
 
-review_router = APIRouter(prefix = "/review")
+review_router = APIRouter(prefix = "/review", tags = ["reviews"])
 
 
 ###############################################################################

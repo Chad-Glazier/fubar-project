@@ -11,7 +11,7 @@ class SavedBookAction(BaseModel):
 	message: str
 
 
-saved_book_router = APIRouter(prefix="/saved_book")
+saved_book_router = APIRouter(prefix="/saved_book", tags = ["saved books"])
 
 
 def _require_user(req: Request, action: str) -> User:
