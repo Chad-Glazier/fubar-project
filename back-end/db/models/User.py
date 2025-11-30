@@ -43,6 +43,7 @@ class User(PersistedModel):
 	display_name: str
 	email: EmailStr
 	password: str
+	is_admin: bool = False
 
 	@classmethod
 	def from_session(cls, req: Request) -> Self | None:
