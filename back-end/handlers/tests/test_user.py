@@ -104,7 +104,7 @@ def test_user_recognition():
 	)
 	assert new_session != None
 
-	resp = new_client.get("/user")
+	resp = new_client.get("/user/me")
 	body: UserDetails = UserDetails.model_validate_json(resp.content)
 
 	assert resp.status_code == 200

@@ -183,7 +183,7 @@ def test_user_data():
 		)
 		assert resp.status_code == HTTPStatus.CREATED
 
-	resp = client.get("/user")
+	resp = client.get("/user/me")
 	body = UserDetails.model_validate_json(resp.content)
 
 	assert resp.status_code == HTTPStatus.OK

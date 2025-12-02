@@ -111,7 +111,7 @@ def test_system(authenticated_client: tuple[TestClient, User, list[Book]]):
     # Check that the dummy user account and books were set up correctly.
     #
 
-    resp = client.get("/user")
+    resp = client.get("/user/me")
     assert resp.status_code == HTTPStatus.OK
     body = UserDetails.model_validate_json(resp.content)
     assert body.email == user.email
@@ -124,7 +124,7 @@ def test_system(authenticated_client: tuple[TestClient, User, list[Book]]):
     resp = client.delete("/user/session")
     assert resp.status_code == HTTPStatus.OK
 
-    resp = client.get("/user")
+    resp = client.get("/user/me")
     assert resp.status_code == HTTPStatus.NOT_FOUND
 
     resp = client.post(
@@ -136,7 +136,7 @@ def test_system(authenticated_client: tuple[TestClient, User, list[Book]]):
     )
     assert resp.status_code == HTTPStatus.OK
 
-    resp = client.get("/user")
+    resp = client.get("/user/me")
     assert resp.status_code == HTTPStatus.OK
     body = UserDetails.model_validate_json(resp.content)
     assert body.email == user.email

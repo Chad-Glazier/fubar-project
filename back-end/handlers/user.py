@@ -5,8 +5,10 @@ from uuid import uuid4
 from http import HTTPStatus
 import argon2
 
+from db.models.SavedBook import SavedBook
 from db.models.User import User, UserSession, TOKEN_NAME
 from db.models.UserReview import UserReview
+from db.models.Book import Book
 
 password_hasher = argon2.PasswordHasher()
 
@@ -30,6 +32,7 @@ class UserDetails(BaseModel):
 	display_name: str
 	email: str
 	reviews: list[UserReview]
+	saved_books: list[Book]
 
 ###############################################################################
 # 
@@ -85,7 +88,7 @@ async def register_user(user_details: RegistrationDetails, resp: Response) \
 #
 # Gets the data about the currently logged in user.
 #
-@user_router.get("/")
+@user_router.get("/me")
 async def account_info(req: Request) -> UserDetails:
 	user = User.from_session(req)
 	if user == None:
@@ -97,11 +100,20 @@ async def account_info(req: Request) -> UserDetails:
 	user_reviews: list[UserReview] = []
 	for review in UserReview.get_where(user_id = user.id):
 		user_reviews.append(review)
+
+	saved_books: list[Book] = []
+	for saved_book in SavedBook.get_where(user_id = user.id):
+		book = Book.get_by_primary_key(saved_book.book_id)
+		if book == None:
+			saved_book.delete()
+			continue
+		saved_books.append(book)
 	
 	return UserDetails(
 		display_name = user.display_name,
 		email = user.email,
-		reviews = user_reviews
+		reviews = user_reviews,
+		saved_books = saved_books
 	)
 
 #

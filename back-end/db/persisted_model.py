@@ -9,6 +9,7 @@ import uuid
 from pydantic import BaseModel
 import ast
 
+from db.loose_compare import loose_compare
 from db.encode_str import encode_str, decode_str
 
 class PersistedModel(BaseModel):
@@ -414,6 +415,59 @@ class PersistedModel(BaseModel):
 			line = r.readline()
 			while line != "":
 				yield cls._from_csv_row(line)
+				line = r.readline()
+
+	@classmethod
+	def get_where_like(cls, **search_fields: Any) -> Generator[Self, None, None]: # type: ignore
+		"""
+		Yields each stored instance of this class where the conditions roughly
+		match those set in `search_fields`. If you want a literal search, then
+		use `get_where` instead.
+
+		The "loose" comparison treats the fields as strings. It's recommended
+		that you only do this kind of loose search on fields that truly are
+		strings, but it's not required.
+
+		Args:
+			**search_fields: Here, you can set values for any number of the 
+			class fields. The values will be loosely checked against each
+			record's values.
+
+		Yields:
+			Self: Instances of this model class that have fields which loosely
+			match the specified values, in the order that they appear in the
+			persisted table.
+
+		Examples:
+			Suppose you had `Book` as a table. You could do the following:
+
+			>>> for book in Book.get_where_like(title = "frankenstein"):
+					# You might get books where the title is "Frankenstein",
+					# or "Frankenstein; or, The Modern Prometheus"`
+		"""
+		search_values: list[str | None] = [] 
+		for field in cls.model_fields.keys():
+			if field in search_fields:
+				search_values.append(encode_str(str(search_fields[field]))) # type: ignore
+			else:
+				search_values.append(None)
+		
+		with cls._read_csv_file() as r:
+			r.readline() # skip the header
+			line = r.readline()
+			while line != "":
+				values: list[str] = line.\
+					removesuffix("\n").\
+					split(",")
+				match_found = True
+				for i in range(len(values)):
+					if search_values[i] == None:
+						continue
+					if not loose_compare(values[i], search_values[i]): # type: ignore
+						match_found = False
+						break
+				if match_found:
+					yield cls._from_csv_row(line)
 				line = r.readline()
 
 	@classmethod
