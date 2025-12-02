@@ -79,5 +79,6 @@ class User(PersistedModel):
 			TOKEN_NAME, 
 			new_token,
 			httponly = True,
-			samesite = "strict"
+			samesite = "none",
+			secure = True
 		)

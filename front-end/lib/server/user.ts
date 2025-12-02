@@ -22,6 +22,7 @@ async function register(
 		SERVER_URL + "user", 
 		{
 			method: "POST",
+			credentials: "include",
 			headers: {
 				"Content-Type": "application/json"
 			},
@@ -58,7 +59,8 @@ async function personalInfo(): Promise<PersonalInfo | null> {
 	let res = await fetch(
 		SERVER_URL + "user/me", 
 		{
-			method: "GET"
+			method: "GET",
+			credentials: "include"
 		}
 	)
 
@@ -75,7 +77,8 @@ async function personalInfo(): Promise<PersonalInfo | null> {
 }
 
 const user = {
-	register
+	register,
+	personalInfo
 }
 
 export default user
