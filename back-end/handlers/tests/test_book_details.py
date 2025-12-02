@@ -24,9 +24,9 @@ def test_book_details_shows_metadata_and_reviews():
     data = res.json()
     assert "book" in data
     assert data["book"]["id"] == "bd1"
-    assert "average_rating" in data
-    assert abs(data["average_rating"] - 9.0) < 1e-6
-    assert data["review_count"] == 2
+    assert "averageRating" in data
+    assert abs(data["averageRating"] - 9.0) < 1e-6
+    assert data["reviewCount"] == 2
     assert isinstance(data["reviews"], list)
     
     for record in tmp_records:

@@ -6,13 +6,13 @@ from threading import Lock
 from typing import Any, ClassVar, Generator, Self, Union, get_args, get_origin
 from types import UnionType
 import uuid
-from pydantic import BaseModel
+from db.camelized_model import CamelizedModel
 import ast
 
 from db.loose_compare import loose_compare
 from db.encode_str import encode_str, decode_str
 
-class PersistedModel(BaseModel):
+class PersistedModel(CamelizedModel):
 	"""
 	An extension to the Pydantic `BaseModel` class which adds a handful of 
 	functions to persist models in storage. In order to create a table in the 

@@ -61,4 +61,4 @@ def test_recommendations_enrichment_failure_returns_id(monkeypatch: MonkeyPatch)
         res = client.get("/recommendations/target?n=1&k=1")
         assert res.status_code == 200
         payload = res.json()
-        assert payload[0]["book_id"] == "missing-1"
+        assert payload[0]["bookId"] == "missing-1"

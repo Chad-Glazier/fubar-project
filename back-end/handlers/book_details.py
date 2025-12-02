@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
+from db.camelized_model import CamelizedModel
 from typing import List
 
 from db.models.Book import Book
@@ -7,7 +7,7 @@ from db.models.UserReview import UserReview
 
 book_router = APIRouter(prefix="/books", tags=["books"])
 
-class BookDetails(BaseModel):
+class BookDetails(CamelizedModel):
     book: Book
     average_rating: float
     review_count: int

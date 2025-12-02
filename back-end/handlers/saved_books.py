@@ -1,13 +1,13 @@
 from fastapi import APIRouter, HTTPException, Request
 from http import HTTPStatus
-from pydantic import BaseModel
+from db.camelized_model import CamelizedModel
 
 from db.models.User import User
 from db.models.Book import Book
 from db.models.SavedBook import SavedBook
 
 
-class SavedBookAction(BaseModel):
+class SavedBookAction(CamelizedModel):
 	message: str
 
 

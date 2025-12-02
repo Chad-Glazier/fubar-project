@@ -28,14 +28,23 @@ def _matches_rating(book: Book, rating_min: float | None, rating_max: float | No
 	return True
 
 
-@search_router.get("/", response_model=List[Book])
+@search_router.get("/", responses = {
+        404: {
+            "description": "Item not found",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Item not found"}
+                }
+            }
+        }
+    })
 async def search_books(
 	author: str | None = Query(None),
 	year: int | None = Query(None),
 	rating_min: float | None = Query(None),
 	rating_max: float | None = Query(None),
 	limit: int = Query(DEFAULT_LIMIT),
-):
+) -> List[Book]:
 	results: Generator[Book, None, None] = Book.get_all()
 
 	final_results: List[Book] = []

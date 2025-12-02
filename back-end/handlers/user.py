@@ -1,9 +1,10 @@
-from pydantic import BaseModel, EmailStr, StringConstraints
+from pydantic import EmailStr, StringConstraints
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Response, Request
 from uuid import uuid4
 from http import HTTPStatus
 import argon2
+from db.camelized_model import CamelizedModel
 
 from db.models.SavedBook import SavedBook
 from db.models.User import User, UserSession, TOKEN_NAME
@@ -19,16 +20,16 @@ user_router = APIRouter(prefix = "/user", tags = ["users"])
 # The types that will be used by this router are defined below.
 #
 
-class RegistrationDetails(BaseModel):
+class RegistrationDetails(CamelizedModel):
 	display_name: Annotated[str, StringConstraints(min_length=1)]
 	email: EmailStr
 	password: Annotated[str, StringConstraints(min_length=1)]
 
-class UserCredentials(BaseModel):
+class UserCredentials(CamelizedModel):
 	email: EmailStr
 	password: Annotated[str, StringConstraints(min_length=1)]
 
-class UserDetails(BaseModel):
+class UserDetails(CamelizedModel):
 	display_name: str
 	email: str
 	reviews: list[UserReview]

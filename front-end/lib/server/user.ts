@@ -1,5 +1,18 @@
 import { SERVER_URL } from "@/env"
+import { PersonalInfo, PersonalInfoSchema } from "./schema"
 
+/**
+ * Register a new user. If something is wrong with the registration, like
+ * attempting to register an existing email or display name, then a user-
+ * appropriate error message will be returned. If the account was registered
+ * correctly, then the user should now be logged in and this function returns
+ * `null`.
+ * 
+ * @param displayName 
+ * @param email 
+ * @param password 
+ * @returns an `Error` if something went wrong, otherwise returns `null`.
+ */
 async function register(
 	displayName: string,
 	email: string,
@@ -33,6 +46,32 @@ async function register(
 	default: // Unexpected validation error (from fastapi)
 		return new Error("Unknown error occurred. Try again.")
 	}
+}
+
+/**
+ * Get the personal information about whichever user is currently logged in.
+ * 
+ * @returns `PersonalInfo` about the current user; if no one is logged in,
+ * returns `null`.
+ */
+async function personalInfo(): Promise<PersonalInfo | null> {
+	let res = await fetch(
+		SERVER_URL + "user/me", 
+		{
+			method: "GET"
+		}
+	)
+
+	if (!res.ok) {
+		return null
+	}
+
+	let parsed = PersonalInfoSchema.safeParse(await res.json())
+	if (!parsed.success) {
+		return null
+	}
+
+	return parsed.data
 }
 
 const user = {

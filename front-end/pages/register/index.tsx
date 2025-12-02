@@ -1,21 +1,7 @@
-import { Inter } from "next/font/google"
 import styles from "@/styles/Login.module.css"
 import server from "@/lib/server"
 import { useState } from "react";
 import Head from "next/head"
-
-const inter = Inter({
-	variable: "--font-inter",
-	subsets: ["latin"],
-});
-
-export const getServerSideProps = (async () => {
-	// Fetch data from external API
-	const res = await fetch('https://api.github.com/repos/vercel/next.js')
-	const repo: Repo = await res.json()
-	// Pass data to the page via props
-	return { props: { repo } }
-}) satisfies GetServerSideProps<{ repo: Repo }>
 
 export default function Register() {
 	const [ errorMessage, setErrorMessage ] = useState<string>("")
@@ -49,11 +35,11 @@ export default function Register() {
 	return (
 		<>
 			<Head>
-				<title>Reading List</title>
-				<meta name="description" content="Log in to Reading List." />
+				<title>Reading List | Register</title>
+				<meta name="description" content="Register an account for Reading List." />
 			</Head>
 			<div
-				className={`${styles.page} ${inter.variable}`}
+				className={`${styles.page}`}
 			>
 				<main className={styles.main}>
 					<form onSubmit={handleSubmit}>
