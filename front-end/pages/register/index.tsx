@@ -2,13 +2,14 @@ import { Inter } from "next/font/google"
 import styles from "@/styles/Login.module.css"
 import server from "@/lib/server"
 import { useState } from "react";
+import Head from "next/head"
 
 const inter = Inter({
 	variable: "--font-inter",
 	subsets: ["latin"],
 });
 
-export default function Login() {
+export default function Register() {
 	const [ errorMessage, setErrorMessage ] = useState<string>("")
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -16,17 +17,17 @@ export default function Login() {
 
 		const formData = new FormData(e.currentTarget)
 
-		const password = formData.get("password")
-		const confirmPassword = formData.get("confirmPassword")
+		const password = formData.get("password")!.toString()
+		const confirmPassword = formData.get("confirm_password")!.toString()
 		if (password != confirmPassword) {
 			setErrorMessage("Please ensure that the passwords match.")
 			return
 		}
 
 		const err = await server.user.register(
-			formData.get("email")!.toString(),
 			formData.get("display_name")!.toString(),
-			password!.toString()
+			formData.get("email")!.toString(),
+			password
 		)
 
 		if (err == null) {
@@ -39,11 +40,15 @@ export default function Login() {
 
 	return (
 		<>
+			<Head>
+				<title>Reading List</title>
+				<meta name="description" content="Log in to Reading List." />
+			</Head>
 			<div
 				className={`${styles.page} ${inter.variable}`}
 			>
 				<main className={styles.main}>
-					<form onClick={handleSubmit}>
+					<form onSubmit={handleSubmit}>
 					<div>
 						<label htmlFor="email">Email</label><br />
 						<input type="email" id="email" name="email" required />
@@ -64,7 +69,7 @@ export default function Login() {
 						<input type="password" id="confirm_password" name="confirm_password" required minLength={8} />
 					</div>
 
-					<p hidden={errorMessage != ""}>{errorMessage}</p>
+					<p hidden={errorMessage === ""}>{errorMessage}</p>
 
 					<button type="submit">Create Account</button>
 					</form>
