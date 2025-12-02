@@ -2,7 +2,7 @@ import { Inter } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 
 const inter = Inter({
-	variable: "--font-geist-sans",
+	variable: "--font-inter",
 	subsets: ["latin"],
 });
 
