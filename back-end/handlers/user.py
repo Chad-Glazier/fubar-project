@@ -40,6 +40,12 @@ class UserProfile(CamelizedModel):
 	profile_picture_path: str
 	reviews: list[UserReview]
 
+class UserStreak(CamelizedModel):
+	current_streak: int
+	longest_streak: int
+	last_activity_date: str | None = None
+	badge: str
+
 ###############################################################################
 # 
 # The request handlers are defined below.
@@ -146,6 +152,16 @@ async def public_account_info(user_id: str) -> UserProfile:
 		profile_picture_path = user.profile_picture_path,
 		reviews = reviews
 	)
+
+@user_router.get("/{user_id}/streak", response_model=UserStreak)
+async def get_user_streak(user_id: str) -> UserStreak:
+	user = User.get_by_primary_key(user_id)
+	if user is None:
+		raise HTTPException(
+			status_code = HTTPStatus.NOT_FOUND,
+			detail = "User not found."
+		)
+	return UserStreak(**user.streak_info())
 
 
 #

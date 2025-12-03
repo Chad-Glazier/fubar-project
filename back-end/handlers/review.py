@@ -134,6 +134,7 @@ async def post_review(
 		text = review.text
 	)
 	new_review.put()
+	user.record_activity()
 
 	resp.status_code = HTTPStatus.CREATED
 
@@ -164,4 +165,3 @@ async def delete_review(book_id: str, req: Request):
 	)
 	if review != None:
 		review.delete()
-

@@ -1,5 +1,6 @@
 from typing import Any
 from fastapi.testclient import TestClient
+from pytest import MonkeyPatch
 from secrets import token_urlsafe
 from time import time_ns
 
@@ -119,6 +120,24 @@ def test_save_requires_authentication():
 	cleanup()
 
 def test_save_missing_book_returns_404():
+	cleanup()
+
+def test_save_book_updates_streak(monkeypatch: MonkeyPatch):
+	user, book = setup_data()
+	call_count = {"value": 0}
+
+	original = User.record_activity
+
+	def tracker(self: User, activity_date=None):
+		call_count["value"] += 1
+		return original(self, activity_date)
+
+	monkeypatch.setattr(User, "record_activity", tracker)
+
+	response = client.put(f"/saved_book/{book.id}")
+	assert response.status_code == 200
+	assert call_count["value"] == 1
+
 	cleanup()
 	user = User.create(
 		id = "u_test",
