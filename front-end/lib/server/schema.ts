@@ -24,7 +24,9 @@ export const ReviewSchema = z.object({
 export type Review = z.infer<typeof ReviewSchema>
 
 export const AccountInfoSchema = z.object({
+	id: z.string(),
 	displayName: z.string(),
+	profilePicturePath: z.string(),
 	reviews: z.array(ReviewSchema),
 })
 export type AccountInfo = z.infer<typeof AccountInfoSchema>
@@ -38,8 +40,15 @@ export const PersonalInfoSchema = z.intersection(
 )
 export type PersonalInfo = z.infer<typeof PersonalInfoSchema>
 
+export const UserStreakSchema = z.object({
+	currentStreak: z.number(),
+	longestStreak: z.number(),
+	lastActivityDate: z.string().nullable(),
+	badge: z.string(),
+})
+export type UserStreak = z.infer<typeof UserStreakSchema>
+
 export const ServerErrorSchema = z.object({
 	detail: z.string(),
 })
 export type ServerError = z.infer<typeof ServerErrorSchema>
-
