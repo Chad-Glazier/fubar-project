@@ -45,7 +45,7 @@ async function register(
 			return new Error(body.detail)
 		}
 	default: // Unexpected validation error (from fastapi)
-		return new Error("Unknown error occurred. Try again.")
+		return new Error("Unknown error occurred. Please try again.")
 	}
 }
 
@@ -76,9 +76,51 @@ async function personalInfo(): Promise<PersonalInfo | null> {
 	return parsed.data
 }
 
+/**
+ * Log in to an account.
+ * 
+ * @returns an `Error` with a message appropriate for the end-user if something
+ * went wrong, otherwise returns `null`.
+ */
+async function logIn(
+	email: string,
+	password: string 
+): Promise<Error | null> {
+	let res = await fetch(
+		SERVER_URL + "user/session", 
+		{
+			method: "POST",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				email: email,
+				password: password
+			}),
+		}
+	)
+
+	switch (res.status) {
+	case 200: // OK
+	case 201:
+		return null
+	case 401: // wrong password
+	case 404: // wrong email
+	case 500: // server error
+		let body = await res.json()
+		if (body.detail != undefined) {
+			return new Error(body.detail)
+		}
+	default: // Unexpected validation error (from fastapi)
+		return new Error("Unknown error occurred. Please try again.")
+	}
+}
+
 const user = {
 	register,
-	personalInfo
+	personalInfo,
+	logIn
 }
 
 export default user

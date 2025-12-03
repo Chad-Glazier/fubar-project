@@ -1,4 +1,4 @@
-import styles from "@/styles/Login.module.css"
+import styles from "@/styles/Register.module.css"
 import server from "@/lib/server"
 import { useState } from "react"
 import Head from "next/head"
@@ -16,19 +16,11 @@ export default function Register() {
 
 		const formData = new FormData(e.currentTarget)
 
+		const email = formData.get("email")!.toString()
 		const password = formData.get("password")!.toString()
-		const confirmPassword = formData.get("confirm_password")!.toString()
-		if (password != confirmPassword) {
-			setErrorMessage("Please ensure that the passwords match.")
-			return
-		}
 
 		setLoading(true)
-		const err = await server.user.register(
-			formData.get("display_name")!.toString(),
-			formData.get("email")!.toString(),
-			password
-		)
+		const err = await server.user.logIn(email, password)
 
 		if (err != null) {
 			setErrorMessage(err.message)
@@ -41,7 +33,7 @@ export default function Register() {
 		setUser(userDetails)
 		setLoading(false)
 		if (user === null) {
-			router.push("/login")
+			setErrorMessage("An unexpected error occured. Please try again.")
 		} else {
 			router.push("/")
 		}
@@ -50,8 +42,8 @@ export default function Register() {
 	return (
 		<>
 			<Head>
-				<title>Reading List | Log In</title>
-				<meta name="description" content="Log in to your Reading List account." />
+				<title>Reading List | Register</title>
+				<meta name="description" content="Register an account for Reading List." />
 			</Head>
 			<div
 				className={`${styles.page}`}
@@ -65,23 +57,13 @@ export default function Register() {
 							</div>
 
 							<div>
-								<label htmlFor="display_name">Display Name</label><br />
-								<input type="text" id="display_name" name="display_name" required />
-							</div>
-
-							<div>
 								<label htmlFor="password">Password</label><br />
 								<input type="password" id="password" name="password" required minLength={8} />
 							</div>
 
-							<div>
-								<label htmlFor="confirm_password">Confirm Password</label><br />
-								<input type="password" id="confirm_password" name="confirm_password" required minLength={8} />
-							</div>
-
 							<p hidden={errorMessage === ""}>{errorMessage}</p>
 
-							<button type="submit">Create Account</button>
+							<button type="submit">Log In</button>
 						</fieldset>
 					</form>
 				</main>
@@ -89,4 +71,3 @@ export default function Register() {
 		</>
 	);
 }
-
