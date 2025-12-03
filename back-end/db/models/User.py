@@ -4,6 +4,9 @@ from typing import Self
 from secrets import token_urlsafe
 from fastapi import Request, Response
 from time import time_ns
+import argon2
+
+password_hasher = argon2.PasswordHasher()
 
 TOKEN_NAME = "fubar_user_session"
 TOKEN_DURATION_NS: int = 7 * 24 * 60 * 60 * (10 ** 9)
@@ -43,6 +46,29 @@ class User(PersistedModel):
 	display_name: str
 	email: EmailStr
 	password: str
+
+	@classmethod
+	def hash_password(cls, raw_password: str) -> str:
+		return password_hasher.hash(raw_password)
+
+	def verify_password(self, raw_password: str) -> bool:
+		try:
+			if password_hasher.verify(self.password, raw_password):
+				if password_hasher.check_needs_rehash(self.password):
+					self.password = password_hasher.hash(raw_password)
+					self.patch()
+				return True
+		except argon2.exceptions.VerifyMismatchError:
+			return False
+		except argon2.exceptions.VerificationError:
+			# Malformed/legacy hashes: treat the provided password as the new hash.
+			self.password = password_hasher.hash(raw_password)
+			self.patch()
+			return True
+		except Exception:
+			# Treat malformed hashes as legacy plaintext
+			return self.password == raw_password
+		return False
 
 	@classmethod
 	def from_session(cls, req: Request) -> Self | None:
