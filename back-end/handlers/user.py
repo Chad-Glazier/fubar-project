@@ -3,12 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Response, Request
 from uuid import uuid4
 from http import HTTPStatus
-import argon2
 
 from db.models.User import User, UserSession, TOKEN_NAME
 from db.models.UserReview import UserReview
-
-password_hasher = argon2.PasswordHasher()
 
 user_router = APIRouter(prefix = "/user", tags = ["users"])
 
@@ -60,14 +57,14 @@ async def register_user(user_details: RegistrationDetails, resp: Response) \
 		unique_id = str(uuid4())
 	
 	# Hash the password
-	hashed_password = password_hasher.hash(user_details.password)
+	hashed_password = User.hash_password(user_details.password)
 
 	# Store the user record in the database
 	new_user = User(
 		id = unique_id,
 		display_name = user_details.display_name,
 		email = user_details.email,
-		password = hashed_password
+		password_hash = hashed_password
 	)
 	success = new_user.post()
 
@@ -120,36 +117,24 @@ async def log_out(req: Request, resp: Response) -> None:
 #
 @user_router.post("/session")
 async def log_in(credentials: UserCredentials, resp: Response):
-	user = User.get_first_where(email = credentials.email)
+	matching_users = list(User.get_where(email = credentials.email))
 
-	if user == None:
+	if len(matching_users) == 0:
 		raise HTTPException(
 			status_code = HTTPStatus.NOT_FOUND,
 			detail = "That email is not recognized."
 		)
 
-	try:
-		# raises an exception if it doesn't match	
-		password_hasher.verify(
-			user.password, 
-			credentials.password
-		)
+	user: User | None = None
+	for candidate in reversed(matching_users):
+		if candidate.verify_password(credentials.password):
+			user = candidate
+			break
 
-		user.create_session(resp)
-
-		if password_hasher.check_needs_rehash(user.password):
-			user.password = password_hasher.hash(credentials.password)
-			user.patch()
-
-	except argon2.exceptions.VerifyMismatchError:
+	if user == None:
 		raise HTTPException(
 			status_code = HTTPStatus.UNAUTHORIZED,
 			detail = "Password is incorrect."
 		)
-	
-	except:
-		raise HTTPException(
-			status_code = HTTPStatus.INTERNAL_SERVER_ERROR,
-			detail = "Log in failed for an unknown reason."
-		)
-	
+
+	user.create_session(resp)
