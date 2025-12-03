@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from handlers import ROUTERS
 
@@ -19,3 +20,5 @@ app.add_middleware(
 	allow_credentials = True,
 	allow_headers = ["*"]
 )
+
+app.mount("/public", StaticFiles(directory="public"), name="public")

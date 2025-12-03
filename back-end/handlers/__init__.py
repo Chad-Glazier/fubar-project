@@ -4,6 +4,7 @@ from .search import search_router
 from .recommendations import recommend_router
 from .book_details import book_router
 from .review import review_router
+from .profile_pictures import profile_pictures_router
 
 __all__ = [
 	"user_router",
@@ -12,6 +13,7 @@ __all__ = [
 	"recommend_router",
 	"book_router",
 	"review_router",
+	"profile_pictures_router"
 ]
 
 ROUTERS = (
@@ -21,4 +23,5 @@ ROUTERS = (
 	recommend_router,
 	book_router,
 	review_router,
+	profile_pictures_router
 )
