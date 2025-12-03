@@ -5,13 +5,14 @@ from secrets import token_urlsafe
 from fastapi import Request, Response
 from time import time_ns
 import argon2
+import os
 
 password_hasher = argon2.PasswordHasher()
 
 ADMIN_TOKEN_NAME = "fubar_admin_session"
 TOKEN_DURATION_NS: int = 7 * 24 * 60 * 60 * (10 ** 9)
 TOKEN_MAX_DURATION_NS: int = 30 * 24 * 60 * 60 * (10 ** 9)
-
+TESTING = (os.getenv("TESTING") == "1")
 
 class AdminSession(PersistedModel):
     session_id: str
@@ -97,5 +98,6 @@ class AdminUser(PersistedModel):
             ADMIN_TOKEN_NAME,
             new_token,
             httponly=True,
-            samesite="strict"
+            samesite="none",
+            secure=not TESTING
         )
