@@ -3,15 +3,12 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Response, Request
 from uuid import uuid4
 from http import HTTPStatus
-import argon2
 from db.camelized_model import CamelizedModel
 
 from db.models.SavedBook import SavedBook
 from db.models.User import User, UserSession, TOKEN_NAME
 from db.models.UserReview import UserReview
 from db.models.Book import Book
-
-password_hasher = argon2.PasswordHasher()
 
 user_router = APIRouter(prefix = "/user", tags = ["users"])
 
@@ -64,7 +61,7 @@ async def register_user(user_details: RegistrationDetails, resp: Response) \
 		unique_id = str(uuid4())
 	
 	# Hash the password
-	hashed_password = password_hasher.hash(user_details.password)
+	hashed_password = User.hash_password(user_details.password)
 
 	# Store the user record in the database
 	new_user = User(
@@ -141,28 +138,10 @@ async def log_in(credentials: UserCredentials, resp: Response):
 			detail = "That email is not recognized."
 		)
 
-	try:
-		# raises an exception if it doesn't match	
-		password_hasher.verify(
-			user.password, 
-			credentials.password
-		)
-
-		user.create_session(resp)
-
-		if password_hasher.check_needs_rehash(user.password):
-			user.password = password_hasher.hash(credentials.password)
-			user.patch()
-
-	except argon2.exceptions.VerifyMismatchError:
+	if not user.verify_password(credentials.password):
 		raise HTTPException(
 			status_code = HTTPStatus.UNAUTHORIZED,
 			detail = "Password is incorrect."
 		)
-	
-	except:
-		raise HTTPException(
-			status_code = HTTPStatus.INTERNAL_SERVER_ERROR,
-			detail = "Log in failed for an unknown reason."
-		)
-	
+
+	user.create_session(resp)

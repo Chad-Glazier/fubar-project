@@ -45,6 +45,16 @@ class PersistedModel(CamelizedModel):
 		primary_key_field: str = next(iter(self.__class__.model_fields.keys()))
 		return getattr(self, primary_key_field)
 
+	@classmethod
+	def generate_primary_key(cls) -> str:
+		"""
+		Generates a unique primary key for this model.
+		"""
+		new_key = uuid.uuid4().hex
+		while cls.exists(new_key):
+			new_key = uuid.uuid4().hex
+		return new_key
+
 	def _to_csv_row(self) -> str:
 		row_values: list[str] = []
 		for field_name, value in self.model_dump().items():
