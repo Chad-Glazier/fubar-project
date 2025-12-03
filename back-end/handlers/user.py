@@ -27,10 +27,18 @@ class UserCredentials(CamelizedModel):
 	password: Annotated[str, StringConstraints(min_length=1)]
 
 class UserDetails(CamelizedModel):
+	id: str
+	profile_picture_path: str
 	display_name: str
 	email: str
 	reviews: list[UserReview]
 	saved_books: list[Book]
+
+class UserProfile(CamelizedModel):
+	id: str
+	display_name: str
+	profile_picture_path: str
+	reviews: list[UserReview]
 
 ###############################################################################
 # 
@@ -108,11 +116,37 @@ async def account_info(req: Request) -> UserDetails:
 		saved_books.append(book)
 	
 	return UserDetails(
+		id = user.id,
 		display_name = user.display_name,
 		email = user.email,
 		reviews = user_reviews,
-		saved_books = saved_books
+		saved_books = saved_books,
+		profile_picture_path = user.profile_picture_path
 	)
+
+#
+# Gets the public data about a given user.
+#
+@user_router.get("/{user_id}")
+async def public_account_info(user_id: str) -> UserProfile:
+	user = User.get_by_primary_key(user_id)
+	if user == None:
+		raise HTTPException(
+			status_code = HTTPStatus.NOT_FOUND,
+			detail = "User not found."
+		)
+	
+	reviews: list[UserReview] = []
+	for review in UserReview.get_where(user_id = user.id):
+		reviews.append(review)
+	
+	return UserProfile(
+		id = user.id,
+		display_name = user.display_name,
+		profile_picture_path = user.profile_picture_path,
+		reviews = reviews
+	)
+
 
 #
 # Lets users log out (i.e., delete their session).

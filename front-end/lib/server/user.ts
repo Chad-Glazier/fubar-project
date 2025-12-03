@@ -117,10 +117,16 @@ async function logIn(
 	}
 }
 
+/**
+ * 
+ */
+async function getProfile()
+
 const user = {
 	register,
 	personalInfo,
-	logIn
+	logIn,
+	getProfile
 }
 
 export default user

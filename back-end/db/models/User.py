@@ -1,5 +1,5 @@
 from db.persisted_model import PersistedModel
-from pydantic import EmailStr
+from pydantic import EmailStr, Field
 from typing import Self
 from secrets import token_urlsafe
 from fastapi import Request, Response
@@ -48,6 +48,8 @@ class User(PersistedModel):
 	display_name: str
 	email: EmailStr
 	password: str
+	profile_picture_path: str = \
+		Field(default="public/profile_pictures/default.jpg")
 
 	@classmethod
 	def hash_password(cls, raw_password: str) -> str:
