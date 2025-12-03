@@ -1,5 +1,5 @@
 import { SERVER_URL } from "@/env"
-import { PersonalInfo, PersonalInfoSchema } from "./schema"
+import { PersonalInfo, PersonalInfoSchema, UserStreak, UserStreakSchema } from "./schema"
 
 /**
  * Register a new user. If something is wrong with the registration, like
@@ -118,14 +118,42 @@ async function logIn(
 }
 
 /**
- * 
+ * Fetch a user's reading streak summary.
  */
-async function getProfile()
+async function streak(userId: string): Promise<UserStreak | null> {
+	if (!userId) {
+		return null
+	}
+
+	let res = await fetch(
+		SERVER_URL + `user/${userId}/streak`,
+		{
+			method: "GET",
+			credentials: "include",
+		}
+	)
+
+	if (!res.ok) {
+		return null
+	}
+
+	let parsed = UserStreakSchema.safeParse(await res.json())
+	if (!parsed.success) {
+		return null
+	}
+
+	return parsed.data
+}
+
+async function getProfile() {
+	throw new Error("Not implemented")
+}
 
 const user = {
 	register,
 	personalInfo,
 	logIn,
+	streak,
 	getProfile
 }
 

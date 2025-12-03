@@ -1,2 +1,6 @@
 id,title,authors,categories,description,imageLinks,average_rating
 missing-1,Missing One,["Fetcher"],None,None,None,None
+test_book_id_0,test book title {i},["john cena the {i}th"],None,None,None,None
+test_book_id_1,test book title {i},["john cena the {i}th"],None,None,None,None
+test_book_id_2,test book title {i},["john cena the {i}th"],None,None,None,None
+test_book_id_3,test book title {i},["john cena the {i}th"],None,None,None,None

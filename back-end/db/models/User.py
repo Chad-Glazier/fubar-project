@@ -1,3 +1,4 @@
+from datetime import date
 from db.persisted_model import PersistedModel
 from pydantic import EmailStr, Field
 from typing import Self
@@ -50,6 +51,9 @@ class User(PersistedModel):
 	password: str
 	profile_picture_path: str = \
 		Field(default="public/profile_pictures/default.jpg")
+	current_streak: int = 0
+	longest_streak: int = 0
+	last_activity_date: str | None = None
 
 	@classmethod
 	def hash_password(cls, raw_password: str) -> str:
@@ -112,3 +116,50 @@ class User(PersistedModel):
 			samesite = "none",
 			secure = not TESTING
 		)
+
+	def record_activity(self, activity_date: date | None = None) -> None:
+		"""
+		Update the user's streak counters based on an interaction date.
+		"""
+		activity = activity_date or date.today()
+		current = max(1, self.current_streak) if self.current_streak else 1
+		if self.last_activity_date:
+			try:
+				last = date.fromisoformat(self.last_activity_date)
+			except ValueError:
+				last = None
+			if last:
+				delta = (activity - last).days
+				if delta == 0:
+					return
+				elif delta == 1:
+					current = self.current_streak + 1
+				elif delta > 1:
+					current = 1
+				else:
+					# Older activity shouldn't reset progress; ignore.
+					return
+		self.current_streak = current
+		self.last_activity_date = activity.isoformat()
+		if self.current_streak > self.longest_streak:
+			self.longest_streak = self.current_streak
+		self.put()
+
+	def streak_badge(self) -> str:
+		if self.current_streak >= 30:
+			return "Blazing Bibliophile"
+		if self.current_streak >= 7:
+			return "Weekly Wordsmith"
+		if self.current_streak >= 3:
+			return "Weekend Reader"
+		if self.current_streak >= 1:
+			return "Getting Started"
+		return "New Explorer"
+
+	def streak_info(self) -> dict[str, str | int | None]:
+		return {
+			"current_streak": self.current_streak,
+			"longest_streak": self.longest_streak,
+			"last_activity_date": self.last_activity_date,
+			"badge": self.streak_badge(),
+		}
