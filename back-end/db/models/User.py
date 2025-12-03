@@ -4,10 +4,12 @@ from typing import Self
 from secrets import token_urlsafe
 from fastapi import Request, Response
 from time import time_ns
+import os
 
 TOKEN_NAME = "fubar_user_session"
 TOKEN_DURATION_NS: int = 7 * 24 * 60 * 60 * (10 ** 9)
 TOKEN_MAX_DURATION_NS: int = 30 * 24 * 60 * 60 * (10 ** 9)
+TESTING = (os.getenv("TESTING") == "1")
 
 class UserSession(PersistedModel):
 	session_id: str
@@ -80,5 +82,5 @@ class User(PersistedModel):
 			new_token,
 			httponly = True,
 			samesite = "none",
-			secure = True
+			secure = not TESTING
 		)

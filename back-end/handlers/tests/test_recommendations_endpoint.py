@@ -8,7 +8,6 @@ from db.models.Book import Book
 from db.persisted_model import PersistedModel
 from server import app
 
-
 @contextmanager
 def _test_client_with_temp_data():
     client = TestClient(app)

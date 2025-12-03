@@ -5,7 +5,6 @@ from fastapi.testclient import TestClient
 from server import app
 from db.models.Book import Book
 
-
 def with_temp_books(func: Callable[[TestClient], None]):
     def wrapper():
         client = TestClient(app)
