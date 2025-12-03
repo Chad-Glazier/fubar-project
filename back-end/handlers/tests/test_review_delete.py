@@ -4,18 +4,18 @@ from fastapi.testclient import TestClient
 from server import app
 
 from db.models.User import User
+from db.models.AdminUser import AdminUser
 from db.models.UserReview import UserReview
 
 client = TestClient(app)
 
 
 def create_admin():
-    admin = User(
+    admin = AdminUser(
         id="admin-1",
         email="admin@test.com",
         display_name="Admin",
-        password_hash=User.hash_password("pw"),
-        is_admin=True,
+        password=AdminUser.hash_password("pw"),
     )
     admin.put()
     return admin
@@ -26,8 +26,7 @@ def create_user():
         id="user-1",
         email="user@test.com",
         display_name="User",
-        password_hash=User.hash_password("pw"),
-        is_admin=False,
+        password=User.hash_password("pw"),
     )
     user.put()
     return user
@@ -49,6 +48,10 @@ def login(email, pw):
     return client.post("/user/session", json={"email": email, "password": pw})
 
 
+def admin_login(email, pw):
+    return client.post("/admin/session", json={"email": email, "password": pw})
+
+
 # -------------------------------------------------------------------
 # Tests
 # -------------------------------------------------------------------
@@ -57,7 +60,7 @@ def test_admin_can_delete_review():
     create_admin()
     create_user()
     create_review()
-    login("admin@test.com", "pw")
+    admin_login("admin@test.com", "pw")
 
     res = client.delete("/admin/reviews/rev-1")
     assert res.status_code == 200
@@ -65,7 +68,7 @@ def test_admin_can_delete_review():
 
 def test_delete_review_idempotent():
     create_admin()
-    login("admin@test.com", "pw")
+    admin_login("admin@test.com", "pw")
 
     # Review does not exist but delete should still succeed
     r1 = client.delete("/admin/reviews/not-here")

@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 
 from server import app
 from db.models.User import User
+from db.models.AdminUser import AdminUser
 from db.models.UserReview import UserReview
 from db.models.Report import Report
 from db.models.Penalty import Penalty
@@ -25,13 +26,21 @@ def login(email: str, password: str):
     return client
 
 
+def admin_login(email: str, password: str):
+    response = client.post("/admin/session", json={
+        "email": email,
+        "password": password
+    })
+    assert response.status_code in (200, 201)
+    return client
+
+
 def create_admin():
-    admin = User(
+    admin = AdminUser(
         id="admin123",
         display_name="Admin",
         email="admin@test.com",
-        password="$argon2id$v=19$m=65536,t=3,p=4$abc$abc",  # dummy hash
-        is_admin=True
+        password=AdminUser.hash_password("pw")
     )
     admin.post()
     return admin
@@ -42,8 +51,7 @@ def create_user():
         id="user123",
         display_name="User",
         email="user@test.com",
-        password="$argon2id$v=19$m=65536,t=3,p=4$abc$abc",
-        is_admin=False
+        password=User.hash_password("pw"),
     )
     user.post()
     return user
@@ -102,7 +110,7 @@ def test_user_can_submit_report():
 def test_admin_can_view_reports():
     """Admin can view all submitted reports."""
     create_admin()
-    login("admin@test.com", "pw")
+    admin_login("admin@test.com", "pw")
 
     response = client.get("/admin/reports")
     assert response.status_code == 200
@@ -112,7 +120,7 @@ def test_admin_can_view_reports():
 def test_delete_reports_is_idempotent():
     """DELETE /admin/reports/{review_id} always succeeds."""
     create_admin()
-    login("admin@test.com", "pw")
+    admin_login("admin@test.com", "pw")
 
     # First delete (maybe exists)
     r1 = client.delete("/admin/reports/rev1")
@@ -127,7 +135,7 @@ def test_apply_penalty_creates_penalty_and_log():
     """Admin can apply penalty; audit log is generated."""
     create_admin()
     create_user()
-    login("admin@test.com", "pw")
+    admin_login("admin@test.com", "pw")
 
     response = client.post("/admin/penalty/user123", json={
         "penalty_type": "ban",

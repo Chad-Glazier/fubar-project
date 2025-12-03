@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from server import app
 
-from db.models.User import User
+from db.models.AdminUser import AdminUser
 from db.models.AuditLog import AuditLog
 
 client = TestClient(app)
@@ -11,12 +11,11 @@ client = TestClient(app)
 # Helper: create a fake admin in CSV for testing
 # -----------------------------------------------------------
 def create_test_admin():
-    admin = User(
+    admin = AdminUser(
         id="admin-1",
         email="admin@test.com",
         display_name="Admin",
-        password_hash=User.hash_password("pw"),
-        is_admin=True,
+        password=AdminUser.hash_password("pw"),
     )
     admin.put()
     return admin
@@ -26,15 +25,9 @@ def create_test_admin():
 # Helper: create a normal user
 # -----------------------------------------------------------
 def create_test_user():
-    user = User(
-        id="user-1",
-        email="user@test.com",
-        display_name="NormalUser",
-        password_hash=User.hash_password("pw"),
-        is_admin=False,
-    )
-    user.put()
-    return user
+    # Regular user authentication is handled via /user endpoints; we only need
+    # to set a dummy admin cookie check, so nothing to create here.
+    return None
 
 
 # -----------------------------------------------------------
@@ -42,7 +35,7 @@ def create_test_user():
 # -----------------------------------------------------------
 def login(email: str, password: str):
     return client.post(
-        "/user/session",
+        "/admin/session",
         json={"email": email, "password": password}
     )
 

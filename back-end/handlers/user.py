@@ -64,7 +64,7 @@ async def register_user(user_details: RegistrationDetails, resp: Response) \
 		id = unique_id,
 		display_name = user_details.display_name,
 		email = user_details.email,
-		password_hash = hashed_password
+		password = hashed_password
 	)
 	success = new_user.post()
 
@@ -117,21 +117,15 @@ async def log_out(req: Request, resp: Response) -> None:
 #
 @user_router.post("/session")
 async def log_in(credentials: UserCredentials, resp: Response):
-	matching_users = list(User.get_where(email = credentials.email))
+	user = User.get_first_where(email = credentials.email)
 
-	if len(matching_users) == 0:
+	if user == None:
 		raise HTTPException(
 			status_code = HTTPStatus.NOT_FOUND,
 			detail = "That email is not recognized."
 		)
 
-	user: User | None = None
-	for candidate in reversed(matching_users):
-		if candidate.verify_password(credentials.password):
-			user = candidate
-			break
-
-	if user == None:
+	if not user.verify_password(credentials.password):
 		raise HTTPException(
 			status_code = HTTPStatus.UNAUTHORIZED,
 			detail = "Password is incorrect."

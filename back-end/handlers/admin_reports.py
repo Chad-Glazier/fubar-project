@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 from http import HTTPStatus
 
 from db.models.User import User
+from db.models.AdminUser import AdminUser
 from db.models.Report import Report
 from db.models.UserReview import UserReview
 from db.models.AuditLog import AuditLog
@@ -14,18 +15,13 @@ admin_reports_router = APIRouter(prefix="/admin/reports", tags=["admin"])
 # Helper: require admin login
 # ---------------------------------------------------------
 def require_admin(req: Request) -> User:
-    user = User.from_session(req)
-    if user is None:
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
-            detail="Login required."
-        )
-    if not getattr(user, "is_admin", False):
+    admin = AdminUser.from_session(req)
+    if admin is None:
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED,
             detail="Admin privileges required."
         )
-    return user
+    return admin
 
 
 # ---------------------------------------------------------

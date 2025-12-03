@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Response
 from http import HTTPStatus
 from pydantic import BaseModel, Field
 
 from db.models.User import User
+from db.models.AdminUser import AdminUser
 from db.models.UserReview import UserReview
 from db.models.Report import Report
 from db.models.Penalty import Penalty
@@ -15,15 +16,39 @@ admin_router = APIRouter(prefix="/admin", tags=["admin"])
 # ============================================================
 # AUTH HELPERS
 # ============================================================
-def require_admin(req: Request) -> User:
+def require_admin(req: Request) -> AdminUser:
     """Return authenticated admin user or throw 401."""
-    user = User.from_session(req)
-    if user is None or not user.is_admin:
+    admin = AdminUser.from_session(req)
+    if admin is None:
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED,
             detail="Administrator access required."
         )
-    return user
+    return admin
+
+
+class AdminCredentials(BaseModel):
+    email: str
+    password: str
+
+
+@admin_router.post("/session")
+async def admin_log_in(credentials: AdminCredentials, resp: Response):
+    admin = AdminUser.get_first_where(email=credentials.email)
+    if admin is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail="Administrator account not found."
+        )
+
+    if not admin.verify_password(credentials.password):
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="Password is incorrect."
+        )
+
+    admin.create_session(resp)
+    return {"status": "ok"}
 
 
 # ============================================================

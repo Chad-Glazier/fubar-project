@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 from server import app
 
 from db.models.User import User
+from db.models.AdminUser import AdminUser
 from db.models.UserReview import UserReview
 from db.models.Report import Report
 
@@ -12,12 +13,11 @@ client = TestClient(app)
 
 # Helpers
 def create_admin():
-    admin = User(
+    admin = AdminUser(
         id="admin-1",
         email="admin@test.com",
         display_name="Admin",
-        password_hash=User.hash_password("pw"),
-        is_admin=True,
+        password=AdminUser.hash_password("pw"),
     )
     admin.put()
     return admin
@@ -27,8 +27,7 @@ def create_user():
         id="user-1",
         email="user@test.com",
         display_name="User",
-        password_hash=User.hash_password("pw"),
-        is_admin=False,
+        password=User.hash_password("pw"),
     )
     user.put()
     return user
@@ -46,6 +45,10 @@ def create_review():
 
 def login(email: str, password: str):
     return client.post("/user/session", json={"email": email, "password": password})
+
+
+def admin_login(email: str, password: str):
+    return client.post("/admin/session", json={"email": email, "password": password})
 
 
 # -------------------------------------------------------------------
@@ -71,7 +74,7 @@ def test_user_can_submit_report():
 
 def test_admin_can_view_reports():
     create_admin()
-    login("admin@test.com", "pw")
+    admin_login("admin@test.com", "pw")
 
     res = client.get("/admin/reports")
     assert res.status_code == 200
@@ -80,7 +83,7 @@ def test_admin_can_view_reports():
 
 def test_admin_can_delete_report_idempotent():
     create_admin()
-    login("admin@test.com", "pw")
+    admin_login("admin@test.com", "pw")
 
     # Delete report even if it doesn't exist
     res1 = client.delete("/admin/reports/does-not-exist")

@@ -1,6 +1,5 @@
 from db.persisted_model import PersistedModel
-from pydantic import EmailStr, Field
-from pydantic import ConfigDict
+from pydantic import EmailStr
 from typing import Self
 from secrets import token_urlsafe
 from fastapi import Request, Response
@@ -43,41 +42,32 @@ class UserSession(PersistedModel):
 		return session
 
 class User(PersistedModel):
-	model_config = ConfigDict(populate_by_name = True)
-
 	id: str
 	display_name: str
 	email: EmailStr
-	# Use alias to stay compatible with legacy "password" column in CSV data.
-	password_hash: str = Field(alias = "password")
-	is_admin: bool = False
+	password: str
 
 	@classmethod
 	def hash_password(cls, raw_password: str) -> str:
 		return password_hasher.hash(raw_password)
 
 	def verify_password(self, raw_password: str) -> bool:
-		"""
-		Verifies the provided password against the stored hash. Falls back to a
-		plain comparison for any legacy plaintext records to avoid test setup
-		breakage.
-		"""
 		try:
-			if password_hasher.verify(self.password_hash, raw_password):
-				if password_hasher.check_needs_rehash(self.password_hash):
-					self.password_hash = password_hasher.hash(raw_password)
+			if password_hasher.verify(self.password, raw_password):
+				if password_hasher.check_needs_rehash(self.password):
+					self.password = password_hasher.hash(raw_password)
 					self.patch()
 				return True
 		except argon2.exceptions.VerifyMismatchError:
 			return False
 		except argon2.exceptions.VerificationError:
 			# Malformed/legacy hashes: treat the provided password as the new hash.
-			self.password_hash = password_hasher.hash(raw_password)
+			self.password = password_hasher.hash(raw_password)
 			self.patch()
 			return True
 		except Exception:
 			# Treat malformed hashes as legacy plaintext
-			return self.password_hash == raw_password
+			return self.password == raw_password
 		return False
 
 	@classmethod

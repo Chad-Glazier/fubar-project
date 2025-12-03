@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from pydantic import Field
 from db.persisted_model import PersistedModel
 
@@ -8,7 +8,7 @@ class AuditLog(PersistedModel):
     admin_id: str
     action: str
     target_id: str | None = None
-    timestamp: float = Field(default_factory=lambda: datetime.utcnow().timestamp())
+    timestamp: float = Field(default_factory=lambda: datetime.now(UTC).timestamp())
 
     @classmethod
     def new_id(cls) -> str:
