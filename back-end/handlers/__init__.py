@@ -5,6 +5,7 @@ from .recommendations import recommend_router
 from .book_details import book_router
 from .review import review_router
 from .admin import admin_router
+from .sentiment import sentiment_router
 
 __all__ = [
     "user_router",
@@ -14,6 +15,7 @@ __all__ = [
     "book_router",
     "review_router",
     "admin_router",
+    "sentiment_router",
 ]
 
 ROUTERS = (
@@ -24,4 +26,5 @@ ROUTERS = (
     book_router,
     review_router,
     admin_router,
+    sentiment_router,
 )
