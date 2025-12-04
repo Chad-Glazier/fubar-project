@@ -1,3 +1,4 @@
+import Profile from "@/pages/profile"
 import { z } from "zod"
 
 export const ImageLinksSchema = z.record(z.string(), z.string())
@@ -23,8 +24,31 @@ export const ReviewSchema = z.object({
 })
 export type Review = z.infer<typeof ReviewSchema>
 
-export const AccountInfoSchema = z.object({
+/**
+ *  as returned from `GET /books/{book_id}`
+ */ 
+export const BookDetailsSchema = z.object({
+	book: BookSchema,
+	averageRating: z.number(),
+	reviewCount: z.number(),
+	reviews: z.array(ReviewSchema)
+})
+/**
+ *  as returned from `GET /books/{book_id}`
+ */ 
+export type BookDetails = z.infer<typeof BookDetailsSchema>
+
+export const BasicUserInfoSchema = z.object({
+	id: z.string(),
 	displayName: z.string(),
+	profilePicturePath: z.string(),
+})
+export type BasicUserInfo = z.infer<typeof BasicUserInfoSchema>
+
+export const AccountInfoSchema = z.object({
+	id: z.string(),
+	displayName: z.string(),
+	profilePicturePath: z.string(),
 	reviews: z.array(ReviewSchema),
 })
 export type AccountInfo = z.infer<typeof AccountInfoSchema>
@@ -43,3 +67,13 @@ export const ServerErrorSchema = z.object({
 })
 export type ServerError = z.infer<typeof ServerErrorSchema>
 
+export const ProfilePicturesSchema = z.array(z.object({
+	id: z.string(),
+	relativeUrl: z.string()
+}))
+export type ProfilePictures = z.infer<typeof ProfilePicturesSchema>
+
+export type PopulatedReview = Review & {
+	book: Book,
+	user: BasicUserInfo
+}

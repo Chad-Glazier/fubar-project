@@ -5,6 +5,7 @@ import { UserContext } from "@/lib/hooks/useUser"
 import server from "@/lib/server"
 import { useEffect, useState } from "react"
 import { PersonalInfo } from "@/lib/server/schema"
+import NavBar from "@/lib/components/NavBar";
 
 const inter = Inter({
 	variable: "--font-inter",
@@ -12,7 +13,7 @@ const inter = Inter({
 });
 
 export default function App({ Component, pageProps }: AppProps) {
-	const [ user, setUser ] = useState<PersonalInfo | null>(null)
+	const [ user, setUser ] = useState<PersonalInfo | null | undefined>(undefined)
 
 	useEffect(() => {
 		server.user.personalInfo()
@@ -22,6 +23,7 @@ export default function App({ Component, pageProps }: AppProps) {
 	return (
 		<div className={`${inter.className}`}>
 			<UserContext.Provider value={{ user, setUser }}>
+				<NavBar />
 				<Component {...pageProps} />
 			</UserContext.Provider>
 		</div>

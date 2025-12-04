@@ -5,7 +5,6 @@ import httpx
 import uuid
 import os
 from dotenv import load_dotenv
-from pydantic import BaseModel
 
 # Load local .env if present (safe no-op if not)
 load_dotenv()

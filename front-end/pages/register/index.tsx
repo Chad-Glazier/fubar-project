@@ -1,4 +1,4 @@
-import styles from "@/styles/Login.module.css"
+import styles from "@/styles/Register.module.css"
 import server from "@/lib/server"
 import { useState } from "react"
 import Head from "next/head"

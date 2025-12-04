@@ -1,0 +1,145 @@
+/* ---- Layout ---- */
+.page {
+	display: flex;
+	justify-content: center;
+	padding: 2rem 1rem;
+	color: #e5e5e7;
+	background: #121214;
+	min-height: 100vh;
+}
+
+.main {
+	width: 100%;
+}
+
+/* ---- Profile Content Wrapper ---- */
+.profileDisplay {
+	background: #1a1b1d;
+	border: 1px solid #292a2d;
+	border-radius: 12px;
+	padding: 2rem;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+	min-width: 800px;
+
+	display: flex;
+	flex-direction: column;
+	gap: 1.8rem;
+
+	justify-content: center;
+	align-items: center;
+
+	animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(8px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Profile Picture ---- */
+.profileDisplay img {
+	border-radius: 14px;
+	/* object-fit: cover; */
+	/* border: 2px solid #2f2f33; */
+}
+
+.profileDisplay img.clickable {
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.profileDisplay img.clickable:hover {
+	transform: scale(1.02);
+	border-color: #4d4d55;
+	box-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
+}
+
+.profileDisplay img.clickable:active {
+	transform: scale(0.97);
+}
+
+/* ---- Form ---- */
+.main form fieldset {
+	display: flex;
+	flex-direction: column;
+	gap: 1.4rem;
+	min-width: 400px;
+}
+
+.main fieldset label {
+	font-size: 0.9rem;
+	color: #bbb;
+}
+
+.main input {
+	width: 100%;
+	background: #101014;
+	color: #e5e5e7;
+	border: 1px solid #2a2a2e;
+	padding: 0.6rem 0.8rem;
+	border-radius: 8px;
+	font-size: 0.95rem;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.main input:focus {
+	border-color: #5d5dff;
+	box-shadow: 0 0 0 2px rgb(93 93 255 / 0.25);
+	outline: none;
+}
+
+.main fieldset:disabled input {
+	opacity: 0.65;
+	cursor: not-allowed;
+}
+
+.main form button {
+	width: 100%;
+}
+
+.main button {
+	width: 400px;
+}
+
+/* ---- Error message ---- */
+.main form p {
+	color: #ff6b6b;
+	font-size: 0.9rem;
+	margin: 0;
+}
+
+/* ---- Buttons ---- */
+.main button {
+	background: #2e2f35;
+	color: #f4f4f5;
+	padding: 0.6rem 1.1rem;
+	font-size: 0.95rem;
+	border: 1px solid #3b3b40;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background 0.15s ease, transform 0.12s ease, border-color 0.2s ease;
+}
+
+.main button:hover {
+	background: #3a3b41;
+	border-color: #505058;
+}
+
+.main button:active {
+	transform: scale(0.97);
+}
+
+.main button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* ---- Reviews Section spacing ---- */
+.profileDisplay :global(.reviewSummaryContainer) {
+	margin-top: 1rem;
+}
+
+/* Optional utility in case ReviewSummary needs spacing */
+.profileDisplay > :last-child {
+	margin-top: 1.5rem;
+}

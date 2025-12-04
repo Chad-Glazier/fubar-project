@@ -1,4 +1,4 @@
-from pydantic import EmailStr, StringConstraints
+from pydantic import EmailStr, Field, StringConstraints
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Response, Request
 from uuid import uuid4
@@ -39,6 +39,17 @@ class UserProfile(CamelizedModel):
 	display_name: str
 	profile_picture_path: str
 	reviews: list[UserReview]
+
+class UserProfileBasic(CamelizedModel):
+	id: str
+	display_name: str
+	profile_picture_path: str
+
+class UserDetailsUpdate(CamelizedModel):
+	display_name: str | None = Field(default = None, min_length = 1)
+	profile_picture_path: str | None = Field(default = None, min_length = 1)
+	email: EmailStr | None = Field(default = None, min_length = 1)
+	password: str | None = Field(default = None, min_length = 1)
 
 ###############################################################################
 # 
@@ -91,6 +102,48 @@ async def register_user(user_details: RegistrationDetails, resp: Response) \
 	new_user.create_session(resp)
 	resp.status_code = HTTPStatus.CREATED
 
+# 
+# Lets users change account details
+#
+@user_router.patch("/")
+async def update_account_details(req: Request, new_details: UserDetailsUpdate):
+	"""
+	Updates mutable properties of the currently logged-in user, then returns 
+	their complete details.
+	"""
+	user = User.from_session(req)
+	if user == None:
+		raise HTTPException(
+			status_code = HTTPStatus.UNAUTHORIZED, 
+			detail = "You must be logged in to modify account details."
+		)
+	
+	if new_details.email != None and new_details.email != user.email:
+		conflicting_user = User.get_first_where(email = new_details.email)
+		if conflicting_user != None:
+			raise HTTPException(
+				HTTPStatus.CONFLICT,
+				detail = "That email is already in use."
+			)
+		user.email = new_details.email
+
+	if new_details.display_name != None and new_details.display_name != user.display_name:
+		conflicting_user = User.get_first_where(display_name = new_details.display_name)
+		if conflicting_user != None:
+			raise HTTPException(
+				HTTPStatus.CONFLICT,
+				detail = "That display name is already in use."
+			)
+		user.display_name = new_details.display_name
+
+	if new_details.profile_picture_path != None:
+		user.profile_picture_path = new_details.profile_picture_path
+
+	if new_details.password != None:
+		user.password = User.hash_password(new_details.password)
+
+	user.put()
+
 #
 # Gets the data about the currently logged in user.
 #
@@ -128,12 +181,24 @@ async def account_info(req: Request) -> UserDetails:
 # Gets the public data about a given user.
 #
 @user_router.get("/{user_id}")
-async def public_account_info(user_id: str) -> UserProfile:
+async def public_account_info(user_id: str, basic: bool = False) -> UserProfile | UserProfileBasic:
+	"""
+	Returns the public info about a user account. If you want to make the query
+	a little faster, you can set the `basic=true` query string parameter to
+	omit the `reviews` from the object.
+	"""
 	user = User.get_by_primary_key(user_id)
 	if user == None:
 		raise HTTPException(
 			status_code = HTTPStatus.NOT_FOUND,
 			detail = "User not found."
+		)
+	
+	if basic:
+		return UserProfileBasic(
+			id = user.id,
+			display_name = user.display_name,
+			profile_picture_path = user.profile_picture_path
 		)
 	
 	reviews: list[UserReview] = []
