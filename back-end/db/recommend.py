@@ -103,16 +103,21 @@ def recommend_for_user(user_id: str, k_neighbors: int = 5, n_recs: int = 10) -> 
         ranked = _global_rank(users, exclude=target.keys())
         return ranked[:n_recs]
 
-    # candidate books = all books in data minus those user already rated
-    candidate_books: Set[str] = set().union(*users.values())
+    neighbor_vectors: List[Tuple[Dict[str, float], float]] = [
+        (users[nb_id], sim) for nb_id, sim in neighbors
+    ]
+    candidate_books: Set[str] = set()
+    for vec, _ in neighbor_vectors:
+        candidate_books.update(vec.keys())
     candidate_books.difference_update(target.keys())
 
+    # Score only books seen in neighborhood instead of scanning entire catalog.
     scores: Dict[str, float] = {}
     for book in candidate_books:
         num = 0.0
         den = 0.0
-        for nb_id, sim in neighbors:
-            nb_rating = users[nb_id].get(book)
+        for vec, sim in neighbor_vectors:
+            nb_rating = vec.get(book)
             if nb_rating is not None:
                 num += sim * nb_rating
                 den += abs(sim)

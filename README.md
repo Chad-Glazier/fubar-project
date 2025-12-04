@@ -73,3 +73,14 @@ docker run -p 8000:8000 --env-file back-end/.env fubar-api
 ```
 
 This builds the backend image and exposes the FastAPI app on port 8000. Provide a `.env` file (see `back-end/.env.example`) if you need API keys or other settings.
+
+## Book Cache Tuning
+
+The `Book` model caches primary-key lookups in-process to reduce repeated CSV scans. You can introspect the cache at any point by running:
+
+```sh
+cd back-end
+python -m scripts.book_cache_info
+```
+
+Configure the maximum cache size by setting `BOOK_CACHE_MAX_ENTRIES` (defaults to 2048). Invalid or non-positive values fall back to the default. Use this to balance memory usage vs. hit rate in production.
