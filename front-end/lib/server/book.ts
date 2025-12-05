@@ -71,9 +71,9 @@ async function search(
 	bookTitle: string, 
 	pageNumber: number
 ): Promise<{
-		prev: string | null
-		books: Book[]
-		next: string | null
+	prev: string | null
+	books: Book[]
+	next: string | null
 }> {
 	let res = await fetch(
 		SERVER_URL 

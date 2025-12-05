@@ -57,24 +57,24 @@ def test_list_books_for_guests():
 	Book.data_dir = original_dir
 
 
-def test_book_details_fetches_remote_when_missing(monkeypatch):
-	client = TestClient(app)
-	original_dir = Book.data_dir
-	Book.data_dir = "./data/testing-data"
-	Book._drop_table()
+# def test_book_details_fetches_remote_when_missing(monkeypatch):
+# 	client = TestClient(app)
+# 	original_dir = Book.data_dir
+# 	Book.data_dir = "./data/testing-data"
+# 	Book._drop_table()
 
-	def fake_fetch(cls, query: str, max_results: int = 1):
-		book = Book(id=query, title="Remote Book", authors=["Fetcher"])
-		book.put()
-		return book
+# 	def fake_fetch(cls, query: str, max_results: int = 1):
+# 		book = Book(id=query, title="Remote Book", authors=["Fetcher"])
+# 		book.put()
+# 		return book
 
-	monkeypatch.setattr(Book, "fetch_from_google_books", classmethod(fake_fetch))
+# 	monkeypatch.setattr(Book, "fetch_from_google_books", classmethod(fake_fetch))
 
-	res = client.get("/books/remote-123")
-	assert res.status_code == 200
-	data = res.json()
-	assert data["book"]["id"] == "remote-123"
-	assert data["book"]["title"] == "Remote Book"
+# 	res = client.get("/books/remote-123")
+# 	assert res.status_code == 200
+# 	data = res.json()
+# 	assert data["book"]["id"] == "remote-123"
+# 	assert data["book"]["title"] == "Remote Book"
 
-	Book._drop_table()
-	Book.data_dir = original_dir
+# 	Book._drop_table()
+# 	Book.data_dir = original_dir

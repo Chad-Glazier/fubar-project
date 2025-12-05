@@ -54,7 +54,7 @@ async def get_sentiment(book_id: str) -> dict[str, Any]:
 	reviews = [
 		review.text.strip()
 		for review in UserReview.get_where(book_id=book_id)
-		if review.text is not None and review.text.strip() != ""
+		if review.text.strip() != ""
 	]
 
 	if len(reviews) == 0:

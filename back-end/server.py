@@ -5,12 +5,16 @@ from handlers import ROUTERS
 
 from db.models.UserReview import UserReview
 from db.models.Book import Book
+from db.models.User import User, UserSession
 
 import os
 
 if os.environ.get("TESTING") != "1":
 	Book.data_dir = "data/production-data"
 	UserReview.data_dir = "data/production-data"
+	User.data_dir = "data/production-data"
+	UserSession.data_dir = "data/production-data"
+	
 
 app = FastAPI()
 

@@ -4,6 +4,7 @@ import { PopulatedReview } from "@/lib/server/schema"
 import { useState } from "react"
 import { FaTrash } from "react-icons/fa"
 import server from "../server"
+import { useRouter } from "next/router"
 
 type Props = {
 	reviews: PopulatedReview[]
@@ -22,6 +23,7 @@ export default function ReviewSummary({
 }: Props) {
 	const [ expanded, setExpanded ] = useState<number>(-1)
 	const [ deleted, setDeleted ] = useState<boolean>(false)
+	const router = useRouter()
 	
 	if (reviews.length === 0) {
 		return <div className={styles.empty}>No reviews yet.</div>;
@@ -51,6 +53,9 @@ export default function ReviewSummary({
 								src={SERVER_URL + review.user.profilePicturePath}
 								alt={review.user.displayName}
 								className={styles.avatar}
+								onClick={() => {
+									router.push("/profile/" + review.user.id)
+								}}
 							/>
 							<span className={styles.username}>
 								{review.user.displayName}

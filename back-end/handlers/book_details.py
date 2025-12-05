@@ -14,7 +14,7 @@ class BookDetails(CamelizedModel):
 	reviews: list[UserReview]
 
 @book_router.get("/", response_model=List[Book])
-async def list_books(limit: int = Query(50, ge=1)) -> List[Book]:
+async def list_books(limit: int = Query(default = 50, ge=1)) -> List[Book]:
 	"""Allow guests to browse available books."""
 	books: List[Book] = []
 	for book in Book.get_all():
@@ -24,6 +24,7 @@ async def list_books(limit: int = Query(50, ge=1)) -> List[Book]:
 
 	if not books:
 		raise HTTPException(status_code=404, detail="No books available")
+	
 	return books
 
 @book_router.get("/{book_id}")

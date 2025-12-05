@@ -47,6 +47,7 @@
 	border-radius: 50%;
 	object-fit: cover;
 	border: 1px solid #333;
+	cursor: pointer;
 }
 
 /* username text */
