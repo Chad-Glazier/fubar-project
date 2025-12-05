@@ -28,8 +28,8 @@ def test_sentiment_endpoint_caches_results():
 	resp = client.get(f"/sentiment/{book.id}")
 	assert resp.status_code == 200
 	body = resp.json()
-	assert body["book_id"] == book.id
-	assert body["review_count"] == 2
+	assert body["bookId"] == book.id
+	assert body["reviewCount"] == 2
 	assert "sentiment" in body
 	assert "score" in body
 	assert "scores" in body

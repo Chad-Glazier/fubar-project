@@ -33,15 +33,6 @@ def _analyze_sentiment(text: str) -> dict[str, object]:
 		"scores": scores,
 	}
 
-
-def _serialize(cache_entry: SentimentCache) -> dict[str, Any]:
-	"""
-	FastAPI camelizes models by default via `CamelizedModel`. The tests (and
-	downstream clients) expect snake_case keys, so dump explicitly.
-	"""
-	return cache_entry.model_dump(mode="python", by_alias=False)
-
-
 @sentiment_router.get("/{book_id}")
 async def get_sentiment(book_id: str) -> SentimentCache:
 	book = Book.get_by_primary_key(book_id)
@@ -53,10 +44,7 @@ async def get_sentiment(book_id: str) -> SentimentCache:
 
 	cached = SentimentCache.get_cached(book_id)
 	if cached is not None:
-		if TESTING:
-			return _serialize(cached)
-		else:
-			return cached
+		return cached
 
 	reviews = [
 		review.text.strip()
@@ -80,7 +68,5 @@ async def get_sentiment(book_id: str) -> SentimentCache:
 		scores=sentiment["scores"],  # type: ignore
 		review_count=len(reviews),
 	)
-	if TESTING:
-		return _serialize(cache_entry)
-	else:
-		return cached
+	return cache_entry
+
