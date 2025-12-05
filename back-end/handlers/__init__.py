@@ -17,6 +17,7 @@ __all__ = [
     "review_router",
     "admin_router",
     "sentiment_router",
+	"profile_pictures_router"
 ]
 
 ROUTERS = (
@@ -28,4 +29,5 @@ ROUTERS = (
     review_router,
     admin_router,
     sentiment_router,
+	profile_pictures_router
 )

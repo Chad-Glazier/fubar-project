@@ -9,6 +9,7 @@ import ProfilePicturePicker from "@/lib/components/ProfilePicturePicker"
 import { BasicUserInfo, PopulatedReview } from "@/lib/server/schema"
 import ReviewSummary from "@/lib/components/ReviewSummary"
 import { useRouter } from "next/router"
+import Streak from "@/lib/components/Streak"
 
 type Props = {
 	allowedProfilePicturePaths: string[]
@@ -32,6 +33,8 @@ export default function Profile({ allowedProfilePicturePaths }: Props) {
 	const [ errorMessage, setErrorMessage ] = useState("")
 	const [ reviews, setReviews ] = useState<PopulatedReview[] | null>(null)
 	const [ changingProfilePic, setChangingProfilePic ] = useState<boolean>(false)
+	const [ streakCount, setStreakCount ] = useState<number>(0)
+	const [ streakBadge, setStreakBadge ] = useState<string>("")
 
 	useEffect(() => {
 		if (user === undefined) {
@@ -42,6 +45,15 @@ export default function Profile({ allowedProfilePicturePaths }: Props) {
 			router.push("/login")
 			return
 		}
+
+		server.user.streak(user.id)
+			.then(streak => {
+				if (streak === null) {
+					return
+				}
+				setStreakCount(streak.currentStreak)
+				setStreakBadge(streak.badge)
+			})
 
 		const userBasicInfo: BasicUserInfo = {
 			id: user.id,
@@ -144,6 +156,7 @@ export default function Profile({ allowedProfilePicturePaths }: Props) {
 					width={150}
 					onClick={() => setChangingProfilePic(true)}
 				/>
+				<Streak streakCount={streakCount} badge={streakBadge} />
 				<form onSubmit={handleSubmit}>
 					<fieldset disabled={loading || !editing} style={{ border: "none", padding: 0 }}>
 						<div>

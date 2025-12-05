@@ -7,9 +7,13 @@ from db.models.Book import Book
 from db.models.UserReview import UserReview
 from db.models.SentimentCache import SentimentCache
 
+import os
+
 
 sentiment_router = APIRouter(prefix="/sentiment", tags=["sentiment"])
 _analyzer = SentimentIntensityAnalyzer()
+
+TESTING = os.environ.get("TESTING") == "1"
 
 
 def _analyze_sentiment(text: str) -> dict[str, object]:
@@ -29,17 +33,8 @@ def _analyze_sentiment(text: str) -> dict[str, object]:
 		"scores": scores,
 	}
 
-
-def _serialize(cache_entry: SentimentCache) -> dict[str, Any]:
-	"""
-	FastAPI camelizes models by default via `CamelizedModel`. The tests (and
-	downstream clients) expect snake_case keys, so dump explicitly.
-	"""
-	return cache_entry.model_dump(mode="python", by_alias=False)
-
-
 @sentiment_router.get("/{book_id}")
-async def get_sentiment(book_id: str) -> dict[str, Any]:
+async def get_sentiment(book_id: str) -> SentimentCache:
 	book = Book.get_by_primary_key(book_id)
 	if book is None:
 		raise HTTPException(
@@ -49,12 +44,12 @@ async def get_sentiment(book_id: str) -> dict[str, Any]:
 
 	cached = SentimentCache.get_cached(book_id)
 	if cached is not None:
-		return _serialize(cached)
+		return cached
 
 	reviews = [
 		review.text.strip()
 		for review in UserReview.get_where(book_id=book_id)
-		if review.text is not None and review.text.strip() != ""
+		if review.text.strip() != ""
 	]
 
 	if len(reviews) == 0:
@@ -73,4 +68,5 @@ async def get_sentiment(book_id: str) -> dict[str, Any]:
 		scores=sentiment["scores"],  # type: ignore
 		review_count=len(reviews),
 	)
-	return _serialize(cache_entry)
+	return cache_entry
+

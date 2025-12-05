@@ -1,4 +1,5 @@
 from time import time
+from typing import Self
 from pydantic import Field
 
 from db.persisted_model import PersistedModel
@@ -24,7 +25,7 @@ class SentimentCache(PersistedModel):
 		score: float,
 		scores: dict[str, float],
 		review_count: int
-	) -> "SentimentCache":
+	) -> Self:
 		entry = cls(
 			book_id = book_id,
 			sentiment = sentiment,

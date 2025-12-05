@@ -1,5 +1,5 @@
 import { SERVER_URL } from "@/env"
-import { AccountInfo, AccountInfoSchema, BasicUserInfo, BasicUserInfoSchema, PersonalInfo, PersonalInfoSchema, ProfilePicturesSchema, Recommendations, RecommendationsSchema } from "./schema"
+import { AccountInfo, AccountInfoSchema, BasicUserInfo, BasicUserInfoSchema, PersonalInfo, PersonalInfoSchema, ProfilePicturesSchema, Recommendations, RecommendationsSchema, UserStreak, UserStreakSchema } from "./schema"
 import z from "zod"
 import { logWrongServerResponseBody } from "./util"
 
@@ -315,6 +315,36 @@ async function recommendations(
 	return parsed.data
 }
 
+/**
+ * Get the streak for a given user.
+ */
+async function streak(userId: string): Promise<UserStreak | null> {
+	let res = await fetch(
+		SERVER_URL 
+		+ "user/"
+		+ encodeURIComponent(userId)
+		+ "/streak"
+	)
+
+	let responseBody = await res.json()
+
+	if (!res.ok) {
+		console.error(`Unknown error in retrieving streak:\n${JSON.stringify(responseBody)}`)
+		return null
+	}
+
+	let parsed = UserStreakSchema.safeParse(responseBody)
+	if (!parsed.success) {
+		logWrongServerResponseBody(
+			responseBody,
+			UserStreakSchema
+		)
+		return null
+	}
+
+	return parsed.data
+}
+
 const user = {
 	register,
 	personalInfo,
@@ -325,7 +355,8 @@ const user = {
 	saveBook,
 	unsaveBook,
 	basicAccountInfo,
-	recommendations
+	recommendations,
+	streak
 }
 
 export default user

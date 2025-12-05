@@ -28,6 +28,7 @@ export default function Home() {
 
 		if (user.reviews.length === 0) {
 			setMessage("You need to create some reviews before we can find recommendations for you.")
+			return
 		}
 
 		const storedRecommendations = getStoredRecommendations(user.id)

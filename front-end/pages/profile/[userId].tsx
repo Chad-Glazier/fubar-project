@@ -2,14 +2,16 @@ import styles from "@/styles/Profile.module.css"
 import server from "@/lib/server"
 import Head from "next/head"
 import { GetServerSideProps } from "next"
-import { AccountInfo, PopulatedReview } from "@/lib/server/schema"
+import { AccountInfo, PopulatedReview, UserStreak } from "@/lib/server/schema"
 import { SERVER_URL } from "@/env"
 import ReviewSummary from "@/lib/components/ReviewSummary"
+import Streak from "@/lib/components/Streak"
 
 type Props = {
 	accountInfo: Omit<AccountInfo, "reviews"> & {
 		reviews: PopulatedReview[]
-	}
+	},
+	streak: UserStreak | null
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
@@ -38,17 +40,20 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
 		})
 	}
 
+	let streak = await server.user.streak(userId)
+
 	return {
 		props: {
 			accountInfo: {
 				...accountInfo,
 				reviews: populatedReviews
-			}
+			},
+			streak
 		}
 	}
 }
 
-export default function UserProfile({ accountInfo }: Props) {
+export default function UserProfile({ accountInfo, streak }: Props) {
 	return <>
 		<Head>
 			<title>Reading List | {accountInfo.displayName}</title>
@@ -62,6 +67,10 @@ export default function UserProfile({ accountInfo }: Props) {
 					height={150}
 					width={150}
 				/>
+				{streak  && <Streak 
+					streakCount={streak.currentStreak}
+					badge={streak.badge}
+				/>}
 				<h1>
 					{`${accountInfo.displayName}'s Reviews`}
 				</h1>

@@ -1,5 +1,5 @@
 import { SERVER_URL } from "@/env"
-import { BookDetails, Book, BookSchema, BookDetailsSchema } from "./schema"
+import { BookDetails, Book, BookSchema, BookDetailsSchema, SentimentSchema, Sentiment } from "./schema"
 import { logWrongServerResponseBody } from "./util"
 import z from "zod"
 
@@ -71,9 +71,9 @@ async function search(
 	bookTitle: string, 
 	pageNumber: number
 ): Promise<{
-		prev: string | null
-		books: Book[]
-		next: string | null
+	prev: string | null
+	books: Book[]
+	next: string | null
 }> {
 	let res = await fetch(
 		SERVER_URL 
@@ -116,10 +116,41 @@ async function search(
 	}
 }
 
+/**
+ * Get the sentiment report for a book's reviews
+ */
+async function sentiment(bookId: string): Promise<Sentiment | null> {
+	let res = await fetch(
+		SERVER_URL 
+		+ "sentiment/" 
+		+ encodeURIComponent(bookId) 
+	)
+
+	if (!res.ok) {
+		console.error(
+			`Search results unexpectedly failed. Response body:\n${JSON.stringify(await res.json())}`)
+		return null
+	}
+
+	const responseBody = await res.json()
+	let parsed = SentimentSchema.safeParse(responseBody)
+	
+	if (!parsed.success) {
+		logWrongServerResponseBody(
+			responseBody,
+			z.array(SentimentSchema)
+		)
+		return  null
+	}
+
+	return parsed.data
+}
+
 const book = {
 	details,
 	basicDetails,
-	search
+	search,
+	sentiment
 }
 
 export default book
