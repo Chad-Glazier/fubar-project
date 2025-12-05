@@ -192,3 +192,21 @@ def test_user_data():
 	assert body.email == test_user.email
 
 	cleanup(client, test_user, test_books)
+
+def test_review_updates_streak():
+	client, test_user, test_books = setup()
+
+	resp = client.put(
+		f"/review/{test_books[0].id}",
+		content = ReviewDetails(
+			rating = 5,
+			text = "first impression"
+		).model_dump_json()
+	)
+	assert resp.status_code == HTTPStatus.CREATED
+
+	refreshed = User.get_by_primary_key(test_user.id)
+	assert refreshed is not None
+	assert refreshed.current_streak >= 1
+
+	cleanup(client, test_user, test_books)

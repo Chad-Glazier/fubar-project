@@ -62,6 +62,14 @@ export const PersonalInfoSchema = z.intersection(
 )
 export type PersonalInfo = z.infer<typeof PersonalInfoSchema>
 
+export const UserStreakSchema = z.object({
+	currentStreak: z.number(),
+	longestStreak: z.number(),
+	lastActivityDate: z.string().nullable(),
+	badge: z.string(),
+})
+export type UserStreak = z.infer<typeof UserStreakSchema>
+
 export const ServerErrorSchema = z.object({
 	detail: z.string(),
 })
