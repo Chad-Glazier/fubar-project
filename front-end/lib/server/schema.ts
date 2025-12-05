@@ -1,3 +1,4 @@
+import Profile from "@/pages/profile"
 import { z } from "zod"
 
 export const ImageLinksSchema = z.record(z.string(), z.string())
@@ -22,6 +23,27 @@ export const ReviewSchema = z.object({
 	text: z.string(),
 })
 export type Review = z.infer<typeof ReviewSchema>
+
+/**
+ *  as returned from `GET /books/{book_id}`
+ */ 
+export const BookDetailsSchema = z.object({
+	book: BookSchema,
+	averageRating: z.number(),
+	reviewCount: z.number(),
+	reviews: z.array(ReviewSchema)
+})
+/**
+ *  as returned from `GET /books/{book_id}`
+ */ 
+export type BookDetails = z.infer<typeof BookDetailsSchema>
+
+export const BasicUserInfoSchema = z.object({
+	id: z.string(),
+	displayName: z.string(),
+	profilePicturePath: z.string(),
+})
+export type BasicUserInfo = z.infer<typeof BasicUserInfoSchema>
 
 export const AccountInfoSchema = z.object({
 	id: z.string(),
@@ -52,3 +74,21 @@ export const ServerErrorSchema = z.object({
 	detail: z.string(),
 })
 export type ServerError = z.infer<typeof ServerErrorSchema>
+
+export const ProfilePicturesSchema = z.array(z.object({
+	id: z.string(),
+	relativeUrl: z.string()
+}))
+export type ProfilePictures = z.infer<typeof ProfilePicturesSchema>
+
+export type PopulatedReview = Review & {
+	book: Book,
+	user: BasicUserInfo
+}
+
+export const RecommendationsSchema = z.array(z.object({
+	book: BookSchema.nullable(),
+	bookId: z.string().nullable(),
+	score: z.number()
+}))
+export type Recommendations = z.infer<typeof RecommendationsSchema>

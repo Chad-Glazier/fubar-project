@@ -1,135 +1,145 @@
-@layer components {
-	.page {
-		min-height: 100vh;
-		background: radial-gradient(circle at top, #f7f3ff, #f0f4ff 40%, #fdfdfd);
-		padding: 2rem;
-		display: flex;
-		justify-content: center;
-	}
+/* ---- Layout ---- */
+.page {
+	display: flex;
+	justify-content: center;
+	padding: 2rem 1rem;
+	color: #e5e5e7;
+	background: #121214;
+	min-height: 100vh;
+}
 
-	.container {
-		width: min(960px, 100%);
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
+.main {
+	width: 100%;
+}
 
-	.header {
-		padding: 2rem;
-		border-radius: 1rem;
-		background: #11052c;
-		color: white;
-		box-shadow: 0 20px 45px rgba(17, 5, 44, 0.3);
-	}
+/* ---- Profile Content Wrapper ---- */
+.profileDisplay {
+	background: #1a1b1d;
+	border: 1px solid #292a2d;
+	border-radius: 12px;
+	padding: 3rem;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+	min-width: 800px;
 
-	.greeting {
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		font-size: 0.85rem;
-		margin-bottom: 0.35rem;
-		color: rgba(255, 255, 255, 0.7);
-	}
+	display: flex;
+	flex-direction: column;
+	gap: 1.8rem;
 
-	.header h1 {
-		font-size: clamp(2rem, 5vw, 2.8rem);
-		margin: 0;
-	}
+	justify-content: center;
+	align-items: center;
 
-	.email {
-		opacity: 0.8;
-		margin-top: 0.3rem;
-	}
+	animation: fadeIn 0.2s ease-out;
+}
 
-	.cards {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-		gap: 1.5rem;
-	}
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(8px); }
+	to { opacity: 1; transform: translateY(0); }
+}
 
-	.card {
-		background: white;
-		border-radius: 1rem;
-		padding: 1.5rem;
-		box-shadow: 0 12px 30px rgba(15, 46, 121, 0.12);
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
+/* ---- Profile Picture ---- */
+.profileDisplay img {
+	border-radius: 14px;
+	/* object-fit: cover; */
+	/* border: 2px solid #2f2f33; */
+}
 
-	.card h2 {
-		margin: 0;
-		font-size: 1.3rem;
-	}
+.profileDisplay img.clickable {
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
 
-	.muted {
-		color: #5d6470;
-		margin: 0;
-	}
+.profileDisplay img.clickable:hover {
+	transform: scale(1.02);
+	border-color: #4d4d55;
+	box-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
+}
 
-	.streakGrid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-		gap: 1rem;
-	}
+.profileDisplay img.clickable:active {
+	transform: scale(0.97);
+}
 
-	.metricLabel {
-		text-transform: uppercase;
-		font-size: 0.75rem;
-		letter-spacing: 0.08em;
-		color: #7b7f89;
-		margin-bottom: 0.2rem;
-	}
+/* ---- Form ---- */
+.main form fieldset {
+	display: flex;
+	flex-direction: column;
+	gap: 1.4rem;
+	min-width: 400px;
+}
 
-	.metricValue {
-		font-size: 1.6rem;
-		font-weight: 600;
-		color: #1f2340;
-		margin: 0;
-	}
+.main fieldset label {
+	font-size: 0.9rem;
+	color: #bbb;
+}
 
-	.badge {
-		padding: 1rem;
-		border-radius: 0.75rem;
-		background: linear-gradient(135deg, #fdd866, #f9a825);
-		color: #3c2600;
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-		font-weight: 600;
-	}
+.main input {
+	width: 100%;
+	background: #101014;
+	color: #e5e5e7;
+	border: 1px solid #2a2a2e;
+	padding: 0.6rem 0.8rem;
+	border-radius: 8px;
+	font-size: 0.95rem;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
 
-	.list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
+.main input:focus {
+	border-color: #5d5dff;
+	box-shadow: 0 0 0 2px rgb(93 93 255 / 0.25);
+	outline: none;
+}
 
-	.list li {
-		display: flex;
-		flex-direction: column;
-	}
+.main fieldset:disabled input {
+	opacity: 0.65;
+	cursor: not-allowed;
+}
 
-	.list span {
-		color: #5d6470;
-		font-size: 0.9rem;
-	}
+.main form button {
+	width: 100%;
+}
 
-	.button {
-		align-self: flex-start;
-		padding: 0.65rem 1.5rem;
-		border-radius: 999px;
-		background: #2c3ea7;
-		color: white;
-		font-weight: 600;
-		text-decoration: none;
-		transition: transform 120ms ease, box-shadow 120ms ease;
-		box-shadow: 0 10px 25px rgba(44, 62, 167, 0.25);
-	}
+.main button {
+	width: 400px;
+}
 
-	.button:hover {
-		transform: translateY(-1px);
-	}
+/* ---- Error message ---- */
+.main form p {
+	color: #ff6b6b;
+	font-size: 0.9rem;
+	margin: 0;
+}
+
+/* ---- Buttons ---- */
+.main button {
+	background: #2e2f35;
+	color: #f4f4f5;
+	padding: 0.6rem 1.1rem;
+	font-size: 0.95rem;
+	border: 1px solid #3b3b40;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background 0.15s ease, transform 0.12s ease, border-color 0.2s ease;
+}
+
+.main button:hover {
+	background: #3a3b41;
+	border-color: #505058;
+}
+
+.main button:active {
+	transform: scale(0.97);
+}
+
+.main button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* ---- Reviews Section spacing ---- */
+.profileDisplay :global(.reviewSummaryContainer) {
+	margin-top: 1rem;
+}
+
+/* Optional utility in case ReviewSummary needs spacing */
+.profileDisplay > :last-child {
+	margin-top: 1.5rem;
 }

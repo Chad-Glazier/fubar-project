@@ -1,9 +1,10 @@
-import styles from "@/styles/Login.module.css"
+import styles from "@/styles/Register.module.css"
 import server from "@/lib/server"
 import { useState } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router"
 import useUser from "@/lib/hooks/useUser"
+import Link from "next/link"
 
 export default function Register() {
 	const [ errorMessage, setErrorMessage ] = useState<string>("")
@@ -84,6 +85,10 @@ export default function Register() {
 							<button type="submit">Create Account</button>
 						</fieldset>
 					</form>
+					<p>
+						Already have an account? 
+						Log in <Link href="/login" className={styles.link}>here</Link>.
+					</p>
 				</main>
 			</div>
 		</>

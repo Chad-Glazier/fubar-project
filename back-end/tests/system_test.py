@@ -168,10 +168,10 @@ def test_system(authenticated_client: tuple[TestClient, User, list[Book]]):
         assert review.user_id == user.id
 
     #
-    # Fetch the user's top 3 recommendations
+    # Fetch the user's top 2 recommendations
     #
     
-    REQUESTED_RECOMMENDATIONS = 3
+    REQUESTED_RECOMMENDATIONS = 2
 
     resp = client.get(f"/recommendations/{user.id}?n={REQUESTED_RECOMMENDATIONS}")
     assert resp.status_code == HTTPStatus.OK

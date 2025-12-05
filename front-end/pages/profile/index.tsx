@@ -3,119 +3,197 @@ import server from "@/lib/server"
 import { useState, useEffect } from "react"
 import Head from "next/head"
 import useUser from "@/lib/hooks/useUser"
-import Link from "next/link"
-import { UserStreak } from "@/lib/server/schema"
+import { SERVER_URL } from "@/env"
+import { GetServerSideProps } from "next"
+import ProfilePicturePicker from "@/lib/components/ProfilePicturePicker"
+import { BasicUserInfo, PopulatedReview } from "@/lib/server/schema"
+import ReviewSummary from "@/lib/components/ReviewSummary"
 
-export default function Profile() {
-	const { user } = useUser()
-	const [ streak, setStreak ] = useState<UserStreak | null>(null)
-	const [ loadingStreak, setLoadingStreak ] = useState(false)
+type Props = {
+	allowedProfilePicturePaths: string[]
+}
+
+export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
+	const allowedProfilePicturePaths = await server.user.availableProfilePictures()
+
+	return {
+		props: {
+			allowedProfilePicturePaths
+		}
+	}
+}
+
+export default function Profile({ allowedProfilePicturePaths }: Props) {
+	const router = useRouter()
+	const { user, setUser } = useUser()
+	const [ loading, setLoading ] = useState(false)
+	const [ editing, setEditing ] = useState(false)
+	const [ errorMessage, setErrorMessage ] = useState("")
+	const [ reviews, setReviews ] = useState<PopulatedReview[] | null>(null)
+	const [ changingProfilePic, setChangingProfilePic ] = useState<boolean>(false)
 
 	useEffect(() => {
-		let ignore = false
-		if (!user?.id) {
-			setStreak(null)
+		if (user === undefined) {
+			return
+		}
+		
+		if (user === null) {
+			router.push("/login")
 			return
 		}
 
-		setLoadingStreak(true)
-		server.user.streak(user.id)
-			.then((stats) => {
-				if (!ignore) {
-					setStreak(stats)
-				}
-			})
-			.finally(() => {
-				if (!ignore) {
-					setLoadingStreak(false)
-				}
-			})
+		const userBasicInfo: BasicUserInfo = {
+			id: user.id,
+			displayName: user.displayName,
+			profilePicturePath: user.profilePicturePath
+		};
 
-		return () => {
-			ignore = true
+		(async () => {
+			let populatedReviews: PopulatedReview[] = []
+			for (let review of user.reviews) {
+				let book = await server.book.basicDetails(review.bookId)
+				if (book !== null) {
+					populatedReviews.push({ ...review, book, user: userBasicInfo})
+				}
+			}
+			setReviews(populatedReviews)
+		})()
+	}, [user, router])
+
+	async function updateProfilePicture(newProfilePicPath: string) {
+		setLoading(true)
+		const err = await server.user.updateAccount({
+			profilePicturePath: newProfilePicPath
+		})
+		if (user) {
+			user.profilePicturePath = newProfilePicPath
 		}
-	}, [user?.id])
+		setLoading(false)
+	}
 
-	return (
-		<>
-			<Head>
-				<title>Profile | FUBAR</title>
-			</Head>
-			<main className={styles.page}>
-				<div className={styles.container}>
-					{user ? (
-						<>
-							<section className={styles.header}>
-								<div>
-									<p className={styles.greeting}>Welcome back</p>
-									<h1>{user.displayName}</h1>
-									<p className={styles.email}>{user.email}</p>
-								</div>
-							</section>
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault()
 
-							<section className={styles.cards}>
-								<div className={styles.card}>
-									<h2>Reading Streak</h2>
-									{loadingStreak && <p className={styles.muted}>Checking your streak…</p>}
-									{!loadingStreak && streak && (
-										<div className={styles.streakGrid}>
-											<div>
-												<p className={styles.metricLabel}>Current streak</p>
-												<p className={styles.metricValue}>{streak.currentStreak} days</p>
-											</div>
-											<div>
-												<p className={styles.metricLabel}>Longest streak</p>
-												<p className={styles.metricValue}>{streak.longestStreak} days</p>
-											</div>
-											<div className={styles.badge}>
-												<span>Badge</span>
-												<strong>{streak.badge}</strong>
-											</div>
-											<div>
-												<p className={styles.metricLabel}>Last activity</p>
-												<p className={styles.metricValue}>
-													{streak.lastActivityDate ?? "—"}
-												</p>
-											</div>
-										</div>
-									)}
-									{!loadingStreak && !streak && (
-										<p className={styles.muted}>
-											Start rating or saving books to build your streak.
-										</p>
-									)}
-								</div>
+		const formData = new FormData(e.currentTarget)
 
-								<div className={styles.card}>
-									<h2>Saved Books</h2>
-									{user.savedBooks.length === 0 ? (
-										<p className={styles.muted}>No saved books yet.</p>
-									) : (
-										<ul className={styles.list}>
-											{user.savedBooks.map((book) => (
-												<li key={book.id}>
-													<strong>{book.title}</strong>
-													<span>{book.authors.join(", ")}</span>
-												</li>
-											))}
-										</ul>
-									)}
-								</div>
-							</section>
-						</>
-					) : (
-						<section className={styles.card}>
-							<h2>Sign in required</h2>
-							<p className={styles.muted}>
-								Log in to manage your saved books and see your reading streak.
-							</p>
-							<Link href="/login" className={styles.button}>
-								Go to login
-							</Link>
-						</section>
-					)}
-				</div>
-			</main>
-		</>
-	)
+		const displayName = formData.get("display_name")!.toString()
+		const email = formData.get("email")!.toString()
+		const password = formData.get("password")!.toString()
+		const confirmPassword = formData.get("confirm_password")!.toString()
+
+		if (password != confirmPassword) {
+			setErrorMessage("Ensure that the passwords match.")
+			return
+		}
+
+		let updateObject: Record<string, string> = {}
+		if (email != "") updateObject["email"] = email
+		if (displayName != "") updateObject["displayName"] = displayName
+		if (password != "") updateObject["password"] = password
+
+		setLoading(true)
+		const err = await server.user.updateAccount(updateObject)
+
+		if (err != null) {
+			setErrorMessage(err.message)
+			setLoading(false)
+			return
+		}
+
+		setErrorMessage("")
+		const userDetails = await server.user.personalInfo()
+		setUser(userDetails)
+		setLoading(false)
+		if (user === null) {
+			setErrorMessage("An unexpected error occured. Please try again.")
+		} else {
+			router.push("/profile")
+		}
+	}
+
+	if (user === null) {
+		return <></>
+	}
+	if (user === undefined) {
+		return <>loading...</>
+	}
+	return <>
+		<Head>
+			<title>Reading List | My Account</title>
+			<meta name="description" content={`View ${user.displayName}'s profile.`} />
+		</Head>
+		{changingProfilePic ?
+			<ProfilePicturePicker 
+				relativeImagePaths={allowedProfilePicturePaths}
+				onClose={() => setChangingProfilePic(false)}
+				onSelect={newProfilePicPath => {
+					updateProfilePicture(newProfilePicPath)
+					setChangingProfilePic(false)
+				}}
+			/>
+			:
+			<></>}
+		<main className={`${styles.page} ${styles.main}`}>
+			<div className={`${styles.profileDisplay}`}>
+				<img 
+					className={`${styles.clickable}`}
+					src={SERVER_URL + user.profilePicturePath}
+					alt={`${user.displayName}'s profile picture`}
+					height={150}
+					width={150}
+					onClick={() => setChangingProfilePic(true)}
+				/>
+				<form onSubmit={handleSubmit}>
+					<fieldset disabled={loading || !editing} style={{ border: "none", padding: 0 }}>
+						<div>
+							<label htmlFor="display_name">Display Name</label><br />
+							<input type="text" id="display_name" name="display_name" defaultValue={user.displayName} />
+						</div>
+
+						<div>
+							<label htmlFor="email">Email</label><br />
+							<input type="email" id="email" name="email" defaultValue={user.email} />
+						</div>
+
+						<div hidden={!editing}>
+							<label htmlFor="password">Password</label><br />
+							<input type="password" id="password" name="password" minLength={8} />
+						</div>
+
+						<div hidden={!editing}>
+							<label htmlFor="confirm_password">Confirm Password</label><br />
+							<input type="password" id="confirm_password" name="confirm_password" minLength={8} />
+						</div>
+
+						<p hidden={errorMessage === "" || !editing}>{errorMessage}</p>
+
+						<button type="submit" hidden={!editing}>Update Account Details</button>
+					</fieldset>
+				</form>
+				<button onClick={() => setEditing(!editing)}>
+					{editing ? "Cancel Changes" : "Edit Profile"}
+				</button>
+				{
+					reviews === null ?
+						<></>
+						:
+						<ReviewSummary 
+							reviews={reviews} 
+							showBook={true} 
+							showUser={false} 
+							deleteable={true} 
+							onDelete={(review) => {
+								setReviews(prev => {
+									if (prev === null) {
+										return null
+									}
+									return prev.filter(existingReview => existingReview.id != review.id)
+								})
+								user.reviews = user.reviews.filter(existingReview => existingReview.id != review.id)
+							}}	
+						/>
+				}
+			</div>
+		</main>
+	</>
 }

@@ -4,6 +4,9 @@ from pathlib import Path
 from db.models.Book import Book
 from db.models.UserReview import UserReview
 
+Book.data_dir = "data/production-data"
+UserReview.data_dir = "data/production-data"
+
 print(f"Currently in {os.getcwd()}\n")
 
 print("Enter the name of the directory that contains the original, \n" + \

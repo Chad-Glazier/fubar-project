@@ -1,8 +1,20 @@
 import type { NextConfig } from "next";
+import { SERVER_URL } from "./env"
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      },
+    ],
+  }
 };
 
 export default nextConfig;

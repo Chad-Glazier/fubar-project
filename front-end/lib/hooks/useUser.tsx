@@ -2,11 +2,11 @@ import { createContext, useContext } from "react"
 import { PersonalInfo } from "../server/schema"
 
 type UserContextType = {
-	user: PersonalInfo | null
-	setUser: React.Dispatch<React.SetStateAction<PersonalInfo | null>>
+	user: PersonalInfo | null | undefined
+	setUser: React.Dispatch<React.SetStateAction<PersonalInfo | null | undefined>>
 }
 
-export const UserContext = createContext<UserContextType | null>(null)
+export const UserContext = createContext<UserContextType | null | undefined>(undefined)
 
 export default function useUser(): UserContextType {
 	const context = useContext(UserContext)

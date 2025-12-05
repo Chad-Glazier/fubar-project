@@ -1,5 +1,7 @@
 import { SERVER_URL } from "@/env"
-import { PersonalInfo, PersonalInfoSchema, UserStreak, UserStreakSchema } from "./schema"
+import { AccountInfo, AccountInfoSchema, BasicUserInfo, BasicUserInfoSchema, PersonalInfo, PersonalInfoSchema, ProfilePicturesSchema, Recommendations, RecommendationsSchema } from "./schema"
+import z from "zod"
+import { logWrongServerResponseBody } from "./util"
 
 /**
  * Register a new user. If something is wrong with the registration, like
@@ -41,7 +43,7 @@ async function register(
 	case 500: // Errors expected from the server.
 	case 409: // These responses will contain messages suitable for end-users.
 		let body = await res.json()
-		if (body.detail != undefined) {
+		if (body && body.detail != undefined) {
 			return new Error(body.detail)
 		}
 	default: // Unexpected validation error (from fastapi)
@@ -109,7 +111,7 @@ async function logIn(
 	case 404: // wrong email
 	case 500: // server error
 		let body = await res.json()
-		if (body.detail != undefined) {
+		if (body && body.detail != undefined) {
 			return new Error(body.detail)
 		}
 	default: // Unexpected validation error (from fastapi)
@@ -118,43 +120,212 @@ async function logIn(
 }
 
 /**
- * Fetch a user's reading streak summary.
+ * Get the public info about a specific user.
  */
-async function streak(userId: string): Promise<UserStreak | null> {
-	if (!userId) {
-		return null
-	}
-
+async function accountInfo(userId: string): Promise<AccountInfo | null> {
 	let res = await fetch(
-		SERVER_URL + `user/${userId}/streak`,
+		SERVER_URL + "user/" + encodeURIComponent(userId), 
 		{
-			method: "GET",
-			credentials: "include",
+			method: "GET"
 		}
 	)
 
 	if (!res.ok) {
 		return null
 	}
-
-	let parsed = UserStreakSchema.safeParse(await res.json())
-	if (!parsed.success) {
+	
+	let responseBody = await res.json()
+	let accountInfo = AccountInfoSchema.safeParse(responseBody)
+	if (!accountInfo.success) {
+		logWrongServerResponseBody(responseBody, AccountInfoSchema)
 		return null
 	}
 
-	return parsed.data
+	return accountInfo.data
 }
 
-async function getProfile() {
-	throw new Error("Not implemented")
+async function basicAccountInfo(userId: string): Promise<BasicUserInfo | null> {
+	let res = await fetch(
+		SERVER_URL + "user/" + encodeURIComponent(userId) + "?basic=true", 
+		{
+			method: "GET"
+		}
+	)
+
+	if (!res.ok) {
+		return null
+	}
+	
+	let responseBody = await res.json()
+	let accountInfo = BasicUserInfoSchema.safeParse(responseBody)
+	if (!accountInfo.success) {
+		logWrongServerResponseBody(responseBody, BasicUserInfoSchema)
+		return null
+	}
+
+	return accountInfo.data
+}
+
+/**
+ * Update the details for the currently logged-in user.
+ */
+async function updateAccount(updates: Partial<{
+	profilePicturePath: string
+	email: string
+	password: string
+	displayName: string
+}>): Promise<Error | null> {
+	let res = await fetch(
+		SERVER_URL + "user",
+		{
+			method: "PATCH",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(updates),
+		}
+	)
+
+	switch (res.status) {
+	case 200:
+	case 201:
+		return null
+	case 409:
+	case 401:
+		let body = await res.json()
+		if (body && body.detail != undefined) {
+			return new Error(body.detail)
+		}
+	default:
+		return new Error("Unknown error occurred. Please try again.")
+	}
+}
+
+/**
+ * Get the allowed profile pictures as an array of strings that represent
+ * paths relative to `SERVER_URL` that will serve the images.
+ */
+async function availableProfilePictures(): Promise<string[]> {
+	let res = await fetch(
+		SERVER_URL + "profile_pictures/all"
+	)
+
+	if (!res.ok) {
+		return []
+	}
+
+	let responseBody = await res.json()
+	let profilePictures = ProfilePicturesSchema.safeParse(responseBody)
+	if (!profilePictures.success) {
+		logWrongServerResponseBody(responseBody, ProfilePicturesSchema)
+		return []
+	}
+	return profilePictures.data.map(profilePicture => profilePicture.relativeUrl)
+}
+
+/**
+ * Save a book to the currently logged-in user's account.
+ * 
+ * @returns `null` if everything worked correctly, otherwise returning an
+ * error (usually only happens if the book isn't found or if the user isn't
+ * logged in).
+ */
+async function saveBook(bookId: string): Promise<Error | null> {
+	let res = await fetch(
+		SERVER_URL + "saved_book/" + encodeURIComponent(bookId),
+		{
+			method: "PUT",
+			credentials: "include",
+		}
+	)
+
+	switch (res.status) {
+	case 200:
+	case 201:
+		return null
+	case 404:
+		return new Error("The book could not be found.")
+	case 401:
+		return new Error("You must be logged in to save books.")
+	default:
+		return new Error("Saving the book failed for an unknown reason. Please try again.")
+	}
+}
+
+/**
+ * Remove a book from the currently logged-in user's saved list.
+ * 
+ * @returns `null` if everything worked correctly, otherwise returning an
+ * error (usually only happens if the book isn't found or if the user isn't
+ * logged in).
+ */
+async function unsaveBook(bookId: string): Promise<Error | null> {
+	let res = await fetch(
+		SERVER_URL + "saved_book/" + encodeURIComponent(bookId),
+		{
+			method: "DELETE",
+			credentials: "include",
+		}
+	)
+
+	switch (res.status) {
+	case 200:
+	case 201:
+		return null
+	default:
+		return new Error("Un-saving the book failed for an unknown reason. Please try again.")
+	}
+}
+
+/**
+ * Get's the top `n` recommendations for a user.
+ * 
+ * In the event of an error, the recommendations will be empty.
+ */
+async function recommendations(
+	userId: string,
+	numberOfRecommendations: number
+): Promise<Recommendations> {
+	let res = await fetch(
+		SERVER_URL 
+		+ "recommendations/"
+		+ encodeURIComponent(userId)
+		+ `?n=${numberOfRecommendations}`
+	)
+
+	let responseBody = await res.json()
+
+	if (!res.ok) {
+		console.error(
+			`Unknown error while fetching recommendations:\n${JSON.stringify(responseBody)}`)
+		return []
+	}
+	
+	let parsed = RecommendationsSchema.safeParse(responseBody)
+
+	if (!parsed.success) {
+		logWrongServerResponseBody(
+			responseBody,
+			RecommendationsSchema
+		)
+		return []
+	}
+
+	return parsed.data
 }
 
 const user = {
 	register,
 	personalInfo,
 	logIn,
-	streak,
-	getProfile
+	accountInfo,
+	updateAccount,
+	availableProfilePictures,
+	saveBook,
+	unsaveBook,
+	basicAccountInfo,
+	recommendations
 }
 
 export default user

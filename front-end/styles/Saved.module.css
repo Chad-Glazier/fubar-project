@@ -1,0 +1,39 @@
+.main {
+	padding: 2rem 1.5rem;
+	min-height: calc(100vh - 60px); /* leaves room if you add a navbar */
+	display: flex;
+	justify-content: center;
+	color: #f0f0f0;
+}
+
+.container {
+	width: 100%;
+	max-width: 900px;
+
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	width: 600px;
+
+	animation: fadeIn 0.3s ease;
+}
+
+.container em {
+	color: #aaa;
+	font-style: italic;
+	font-size: 1rem;
+	padding: 1rem;
+	text-align: center;
+	display: block;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}

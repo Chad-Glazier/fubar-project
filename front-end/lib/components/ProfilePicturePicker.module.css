@@ -1,0 +1,91 @@
+/* ---- Backdrop ---- */
+.backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.55);
+	backdrop-filter: blur(3px);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 2000;
+	animation: fadeIn 0.18s ease-out;
+}
+
+/* subtle fade */
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+/* ---- Modal ---- */
+.modal {
+	background: #1b1b1e;
+	border: 1px solid #2a2a2e;
+	border-radius: 12px;
+	padding: 1.5rem 1.7rem;
+	width: min(520px, 90%);
+	max-height: 80vh;
+	overflow-y: auto;
+
+	box-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
+	animation: slideIn 0.22s ease-out;
+}
+
+@keyframes slideIn {
+	from {
+		transform: translateY(12px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+/* ---- Title ---- */
+.title {
+	margin: 0 0 1rem 0;
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: #f1f1f1;
+	text-align: center;
+}
+
+/* ---- Grid of Images ---- */
+.grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+	gap: 1rem;
+	padding: 0.5rem 0;
+}
+
+/* ---- Image thumbnails ---- */
+.image {
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	object-fit: cover;
+	border-radius: 10px;
+	border: 1px solid #2d2d31;
+	cursor: pointer;
+	transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.12s ease;
+}
+
+.image:hover {
+	transform: scale(1.04);
+	border-color: #4d4d55;
+	box-shadow: 0 0 8px rgba(255, 255, 255, 0.12);
+}
+
+.image:active {
+	transform: scale(0.97);
+}
+
+/* ensure scrollbars match dark theme */
+.modal::-webkit-scrollbar {
+	width: 8px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+	background: #333;
+	border-radius: 4px;
+}
