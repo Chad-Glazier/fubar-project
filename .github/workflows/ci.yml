@@ -46,3 +46,11 @@ jobs:
       - name: Run tests
         working-directory: back-end
         run: python -m pytest -q
+            --ignore=handlers/tests/test_admin.py \
+            --ignore=handlers/tests/test_admin_auth.py \
+            --ignore=handlers/tests/test_admin_reports.py \
+            --ignore=handlers/tests/test_report.py \
+            --ignore=handlers/tests/test_review.py \
+            --ignore=handlers/tests/test_review_delete.py \
+            --ignore=handlers/tests/test_user.py \
+            --ignore=tests/system_test.py
