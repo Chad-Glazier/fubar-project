@@ -4,6 +4,7 @@ import { useState } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router"
 import useUser from "@/lib/hooks/useUser"
+import Link from "next/link"
 
 export default function Register() {
 	const [ errorMessage, setErrorMessage ] = useState<string>("")
@@ -42,7 +43,7 @@ export default function Register() {
 	return (
 		<>
 			<Head>
-				<title>Reading List | Register</title>
+				<title>Reading List | Log In</title>
 				<meta name="description" content="Register an account for Reading List." />
 			</Head>
 			<div
@@ -66,6 +67,10 @@ export default function Register() {
 							<button type="submit">Log In</button>
 						</fieldset>
 					</form>
+					<p>
+						Don't have an account? 
+						Create one <Link href="/register" className={styles.link}>here</Link>.
+					</p>
 				</main>
 			</div>
 		</>

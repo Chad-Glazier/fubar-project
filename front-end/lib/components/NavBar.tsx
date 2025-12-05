@@ -3,7 +3,7 @@ import { useState } from "react"
 import useUser from "@/lib/hooks/useUser"
 import styles from "./NavBar.module.css"
 import Link from "next/link"
-import { FaCompass, FaUser, FaBookmark } from "react-icons/fa"
+import { FaCompass, FaUser, FaBookmark, FaSearch } from "react-icons/fa"
 
 export default function NavBar() {
 	const router = useRouter()
@@ -29,7 +29,7 @@ export default function NavBar() {
 					</Link>
 				)}
 			</div>
-
+			
 			<form className={styles.searchForm} onSubmit={handleSearch}>
 				<input
 					className={styles.searchInput}
@@ -37,7 +37,7 @@ export default function NavBar() {
 					placeholder="Search books..."
 					value={query}
 					onChange={(e) => setQuery(e.target.value)}
-				/>
+				/>	
 			</form>
 
 			<div className={styles.right}>

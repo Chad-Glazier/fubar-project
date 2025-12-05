@@ -1,0 +1,108 @@
+.card {
+	display: flex;
+	gap: 1.25rem;
+	background: #1b1b1d;
+	border: 1px solid #2a2a2d;
+	border-radius: 14px;
+	padding: 1rem;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	position: relative;
+}
+
+.card:hover {
+	border-color: #3b3b40;
+	box-shadow: 0 0 12px rgba(255, 255, 255, 0.06);
+}
+
+.expanded {
+	background: #222225;
+	border-color: #3c3c42;
+}
+
+.thumb {
+	width: 50px;
+	height: 70px;
+	object-fit: cover;
+	border-radius: 10px;
+	flex-shrink: 0;
+}
+
+.content {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+.header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.title {
+	font-size: 1.3rem;
+	font-weight: 600;
+	color: #eee;
+	margin: 0;
+}
+
+.titleLink {
+	color: #9fc5ff;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.titleLink:hover {
+	color: #c7ddff;
+}
+
+.rating {
+	font-size: 1rem;
+	color: #f5d76e;
+	opacity: 0.9;
+	white-space: nowrap;
+}
+
+.authors {
+	color: #aaa;
+	font-size: 0.95rem;
+	margin-top: 0.25rem;
+}
+
+.description {
+	color: #ccc;
+	font-size: 0.9rem;
+	line-height: 1.35;
+	margin-top: 0.5rem;
+}
+
+.actions {
+	display: flex;
+	gap: 1rem;
+	margin-top: 1rem;
+}
+
+.actionBtn {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	background: #2b2b2f;
+	border: 1px solid #3b3b42;
+	color: #ddd;
+	font-size: 0.9rem;
+	padding: 0.45rem 0.75rem;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.actionBtn svg {
+	font-size: 1rem;
+}
+
+.actionBtn:hover {
+	background: #343438;
+	border-color: #515159;
+}

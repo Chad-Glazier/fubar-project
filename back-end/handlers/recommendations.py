@@ -5,7 +5,6 @@ from db.camelized_model import CamelizedModel
 from db.recommend import recommend_for_user
 from db.models.Book import Book
 
-
 class RecommendationItem(CamelizedModel):
 	book: Book | None = None
 	book_id: str | None = None
@@ -14,7 +13,7 @@ class RecommendationItem(CamelizedModel):
 recommend_router = APIRouter(prefix="/recommendations", tags=["recommendations"])
 
 @recommend_router.get("/{user_id}", response_model=List[RecommendationItem])
-async def get_recommendations(user_id: str, n: int = Query(10), k: int = Query(5)) -> List[RecommendationItem]:
+async def get_recommendations(user_id: str, n: int = Query(default = 10), k: int = Query(5)) -> List[RecommendationItem]:
 	recs = recommend_for_user(user_id, k_neighbors=k, n_recs=n)
 	if not recs:
 		raise HTTPException(status_code=404, detail="No recommendations available")
@@ -30,7 +29,7 @@ async def get_recommendations(user_id: str, n: int = Query(10), k: int = Query(5
 			enriched = Book.fetch_from_google_books(book_id)
 			if enriched:
 				try:
-					enriched.post()
+					enriched.put()
 				except Exception:
 					pass
 				results.append(RecommendationItem(book=enriched, score=score))

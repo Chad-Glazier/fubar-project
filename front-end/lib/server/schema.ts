@@ -77,3 +77,10 @@ export type PopulatedReview = Review & {
 	book: Book,
 	user: BasicUserInfo
 }
+
+export const RecommendationsSchema = z.array(z.object({
+	book: BookSchema.nullable(),
+	bookId: z.string().nullable(),
+	score: z.number()
+}))
+export type Recommendations = z.infer<typeof RecommendationsSchema>

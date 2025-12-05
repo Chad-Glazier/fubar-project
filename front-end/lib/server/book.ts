@@ -1,6 +1,9 @@
 import { SERVER_URL } from "@/env"
 import { BookDetails, Book, BookSchema, BookDetailsSchema } from "./schema"
 import { logWrongServerResponseBody } from "./util"
+import z from "zod"
+
+const SEARCH_RESULTS_PER_PAGE = 12
 
 /**
  * Get some basic information about a book, like its title.
@@ -61,9 +64,62 @@ async function details(bookId: string): Promise<BookDetails | null> {
 	return parsed.data
 }
 
+/**
+ * Returns the search results for a given book title.
+ */
+async function search(
+	bookTitle: string, 
+	pageNumber: number
+): Promise<{
+		prev: string | null
+		books: Book[]
+		next: string | null
+}> {
+	let res = await fetch(
+		SERVER_URL 
+		+ "search/book/" 
+		+ encodeURIComponent(bookTitle) 
+		+ `?limit=${SEARCH_RESULTS_PER_PAGE + 1}&skip=${(pageNumber - 1) * SEARCH_RESULTS_PER_PAGE}`
+	)
+
+	if (!res.ok) {
+		console.error(
+			`Search results unexpectedly failed. Response body:\n${JSON.stringify(await res.json())}`)
+		return { books: [], prev: null, next: null }
+	}
+
+	const responseBody = await res.json()
+	let parsed = z.array(BookSchema).safeParse(responseBody)
+	
+	if (!parsed.success) {
+		logWrongServerResponseBody(
+			responseBody,
+			z.array(BookSchema)
+		)
+		return { books: [], prev: null, next: null }
+	}
+
+	let prev: string | null = null
+	if (pageNumber > 1) {
+		prev = `/search/${encodeURIComponent(bookTitle)}?page=${pageNumber - 1}`
+	}
+
+	let next: string | null = null
+	if (parsed.data.length > SEARCH_RESULTS_PER_PAGE) {
+		next = `/search/${encodeURIComponent(bookTitle)}?page=${pageNumber + 1}`
+	}
+
+	return {
+		prev,
+		books: parsed.data.slice(0, SEARCH_RESULTS_PER_PAGE),
+		next
+	}
+}
+
 const book = {
 	details,
-	basicDetails
+	basicDetails,
+	search
 }
 
 export default book

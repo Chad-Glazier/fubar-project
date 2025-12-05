@@ -2,22 +2,33 @@ import { SERVER_URL } from "@/env"
 import styles from "./ReviewSummary.module.css"
 import { PopulatedReview } from "@/lib/server/schema"
 import { useState } from "react"
+import { FaTrash } from "react-icons/fa"
+import server from "../server"
 
 type Props = {
-	reviews: PopulatedReview[];
-	showUser?: boolean;
-	showBook?: boolean;
+	reviews: PopulatedReview[]
+	showUser?: boolean
+	showBook?: boolean
+	deleteable?: boolean
+	onDelete?: (review: PopulatedReview) => void
 };
 
 export default function ReviewSummary({
 	reviews,
 	showUser = false,
 	showBook = false,
+	deleteable = false,
+	onDelete
 }: Props) {
 	const [ expanded, setExpanded ] = useState<number>(-1)
+	const [ deleted, setDeleted ] = useState<boolean>(false)
 	
 	if (reviews.length === 0) {
 		return <div className={styles.empty}>No reviews yet.</div>;
+	}
+
+	if (deleted) {
+		return <></>
 	}
 
 	return (
@@ -68,16 +79,36 @@ export default function ReviewSummary({
 						</div>
 					)}
 
+					{deleteable && (expanded === idx) && (
+						<button
+							className={styles.deleteButton}
+							onClick={(e) => {
+								e.stopPropagation();
+
+								server.review.remove(review.bookId)
+									.then(_ => {
+										onDelete && onDelete(review)
+									})
+							}}
+						>
+							<FaTrash />
+						</button>
+					)}
+
 					<div className={styles.body}>
 						<div className={styles.rating}>
 							{review.rating}/10
 						</div>
-						<p className={styles.text}>{
-							review.text.length > 60 && expanded !== idx ?
-								`"${review.text.substring(0, 54)} [...]"`
-								:
-								"\"" + review.text + "\""
-						}</p>
+						{review.text.length > 0 ? 
+							<p className={styles.text}>{
+								review.text.length > 60 && expanded !== idx ?
+									`"${review.text.substring(0, 54)} [...]"`
+									:
+									"\"" + review.text + "\""
+							}</p>
+							:
+							<></>
+						}
 					</div>
 				</div>
 			))}

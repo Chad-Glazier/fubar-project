@@ -66,8 +66,8 @@ async def search_books(
 @search_router.get("/book/{book_title}")
 async def search_book_title(
 	book_title: str, 
-	per_page: int = DEFAULT_LIMIT, 
-	page_index: int = 0,
+	limit: int = DEFAULT_LIMIT, 
+	skip: int = 0
 ) -> list[Book]:
 	"""
 	Searches the book records for one whos title roughly matches the 
@@ -79,16 +79,14 @@ async def search_book_title(
 	with a status code of 200 (instead of 404).
 	"""
 	books: list[Book] = []
-	
-	current_book_idx = 0
+	skipped = 0
 
 	for book in Book.get_where_like(title = book_title):
-		current_book_idx += 1
-		current_page_idx = current_book_idx // per_page
-		if current_page_idx > page_index:
-			break
-		if current_page_idx < page_index:
+		if skipped < skip:
+			skipped += 1
 			continue
+		if len(books) >= limit:
+			break
 		books.append(book)
 		
 	return books

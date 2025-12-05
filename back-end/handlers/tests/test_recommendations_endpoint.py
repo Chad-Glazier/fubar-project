@@ -14,7 +14,7 @@ def _test_client_with_temp_data():
     original_dir = Book.data_dir
     Book.data_dir = "./data/testing-data"
     Book._drop_table()
-    UserReview.data_dir = Book.data_dir
+    UserReview.data_dir = "./data/testing-data"
     UserReview._drop_table()
     try:
         yield client

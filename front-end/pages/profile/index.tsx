@@ -178,7 +178,21 @@ export default function Profile({ allowedProfilePicturePaths }: Props) {
 					reviews === null ?
 						<></>
 						:
-						<ReviewSummary reviews={reviews} showBook={true} showUser={false} />
+						<ReviewSummary 
+							reviews={reviews} 
+							showBook={true} 
+							showUser={false} 
+							deleteable={true} 
+							onDelete={(review) => {
+								setReviews(prev => {
+									if (prev === null) {
+										return null
+									}
+									return prev.filter(existingReview => existingReview.id != review.id)
+								})
+								user.reviews = user.reviews.filter(existingReview => existingReview.id != review.id)
+							}}	
+						/>
 				}
 			</div>
 		</main>

@@ -1,4 +1,4 @@
-/* ---- Page Layout ---- */
+/*  Page Layout  */
 .page {
 	min-height: 100vh;
 	display: flex;
@@ -7,9 +7,10 @@
 	background: #121214;
 	color: #e5e5e7;
 	padding: 1.5rem;
+	height: calc(100vh - 4rem);
 }
 
-/* ---- Main Container ---- */
+/*  Main Container  */
 .main {
 	width: 100%;
 	max-width: 420px;
@@ -74,11 +75,21 @@
 	cursor: not-allowed;
 }
 
-.main p {
+.main form p {
 	color: #b91c1c; /* Red-700 */
 	background: #fee2e2; /* Red-100 */
 	padding: 0.75rem;
 	border-radius: 6px;
 	font-size: 0.95rem;
 	margin: 0;
+}
+
+/* Link at the Bottom */
+.main p {
+	margin-top: 2rem;
+}
+
+.main .link {
+	text-decoration: underline;
+	color: #9fc5ff;
 }
