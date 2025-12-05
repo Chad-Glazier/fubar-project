@@ -2,7 +2,7 @@ import { SERVER_URL } from "@/env"
 import styles from "./ReviewSummary.module.css"
 import { PopulatedReview } from "@/lib/server/schema"
 import { useState } from "react"
-import { FaTrash } from "react-icons/fa"
+import { FaExclamationTriangle, FaTrash } from "react-icons/fa"
 import server from "../server"
 import { useRouter } from "next/router"
 
@@ -11,6 +11,7 @@ type Props = {
 	showUser?: boolean
 	showBook?: boolean
 	deleteable?: boolean
+	reportable?: boolean
 	onDelete?: (review: PopulatedReview) => void
 };
 
@@ -19,6 +20,7 @@ export default function ReviewSummary({
 	showUser = false,
 	showBook = false,
 	deleteable = false,
+	reportable = false,
 	onDelete
 }: Props) {
 	const [ expanded, setExpanded ] = useState<number>(-1)
@@ -97,6 +99,22 @@ export default function ReviewSummary({
 							}}
 						>
 							<FaTrash />
+						</button>
+					)}
+
+					{reportable && (expanded === idx) && (
+						<button
+							className={styles.deleteButton}
+							onClick={(e) => {
+								e.stopPropagation();
+
+								server.review.remove(review.bookId)
+									.then(_ => {
+										onDelete && onDelete(review)
+									})
+							}}
+						>
+							<FaExclamationTriangle />
 						</button>
 					)}
 

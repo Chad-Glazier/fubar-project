@@ -355,7 +355,8 @@ const user = {
 	saveBook,
 	unsaveBook,
 	basicAccountInfo,
-	recommendations
+	recommendations,
+	streak
 }
 
 export default user

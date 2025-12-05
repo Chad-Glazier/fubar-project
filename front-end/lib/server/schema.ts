@@ -92,3 +92,4 @@ export const RecommendationsSchema = z.array(z.object({
 	score: z.number()
 }))
 export type Recommendations = z.infer<typeof RecommendationsSchema>
+
