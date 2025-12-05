@@ -65,14 +65,50 @@ see [this file](back-end/db/tests/test_persisted_model.py).
 
 ## Deploying with Docker
 
-To run the backend in a container:
+### Backend image
+
+The root `Dockerfile` builds the FastAPI server image:
 
 ```sh
 docker build -t fubar-api .
 docker run -p 8000:8000 --env-file back-end/.env fubar-api
 ```
 
-This builds the backend image and exposes the FastAPI app on port 8000. Provide a `.env` file (see `back-end/.env.example`) if you need API keys or other settings.
+This exposes the API on port `8000`. Provide a `.env` file (see `back-end/.env.example`) if you need API keys or other settings.
+
+### Front-end image
+
+The Next.js app has its own Dockerfile under `front-end/`:
+
+```sh
+docker build -t fubar-frontend -f front-end/Dockerfile front-end
+docker run -p 3000:3000 fubar-frontend
+```
+
+By default the UI talks to `http://localhost:8000/`. If you need to point at a different backend host (for example, when both containers run on the same user-defined network), pass a build argument:
+
+```sh
+docker build \
+  -t fubar-frontend \
+  -f front-end/Dockerfile front-end \
+  --build-arg NEXT_PUBLIC_SERVER_URL=http://fubar-api:8000/
+```
+
+Then start the containers on the same network:
+
+```sh
+docker network create fubar-net
+docker run -d --name fubar-api --network fubar-net -p 8000:8000 --env-file back-end/.env fubar-api
+docker run -d --name fubar-frontend --network fubar-net -p 3000:3000 fubar-frontend
+```
+
+Alternatively, for local development outside Docker you can run:
+
+```sh
+cd front-end
+npm install
+npm run start
+```
 
 ## Book Cache Tuning
 
