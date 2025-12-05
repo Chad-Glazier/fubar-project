@@ -11,7 +11,6 @@ type Props = {
 	showUser?: boolean
 	showBook?: boolean
 	deleteable?: boolean
-	reportable?: boolean
 	onDelete?: (review: PopulatedReview) => void
 };
 
@@ -20,7 +19,6 @@ export default function ReviewSummary({
 	showUser = false,
 	showBook = false,
 	deleteable = false,
-	reportable = false,
 	onDelete
 }: Props) {
 	const [ expanded, setExpanded ] = useState<number>(-1)
@@ -102,16 +100,13 @@ export default function ReviewSummary({
 						</button>
 					)}
 
-					{reportable && (expanded === idx) && (
+					{!deleteable && (expanded === idx) && (
 						<button
 							className={styles.deleteButton}
 							onClick={(e) => {
 								e.stopPropagation();
 
-								server.review.remove(review.bookId)
-									.then(_ => {
-										onDelete && onDelete(review)
-									})
+								server.review.report(review.id)
 							}}
 						>
 							<FaExclamationTriangle />

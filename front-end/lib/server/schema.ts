@@ -93,3 +93,12 @@ export const RecommendationsSchema = z.array(z.object({
 }))
 export type Recommendations = z.infer<typeof RecommendationsSchema>
 
+export const SentimentSchema = z.object({
+	bookId: z.string(),
+	sentiment: z.string(),
+	score: z.number(),
+	scores: z.record(z.string(), z.number()), 
+	reviewCount: z.number(),
+	cachedAt: z.number(),           // epoch seconds
+})
+export type Sentiment = z.infer<typeof SentimentSchema>

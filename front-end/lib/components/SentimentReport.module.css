@@ -1,0 +1,79 @@
+.card {
+	background: #1a1b1d;
+	border: 1px solid #292a2d;
+	border-radius: 12px;
+	padding: 1.8rem;
+	color: #e5e5e7;
+	width: 100%;
+	max-width: 600px;
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+	animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	margin-bottom: 1.2rem;
+	font-size: 1.2rem;
+	font-weight: 600;
+}
+
+.subheader {
+	margin-top: 1.4rem;
+	margin-bottom: 0.5rem;
+	font-size: 0.95rem;
+	color: #b5b5b8;
+	font-weight: 600;
+}
+
+.row {
+	display: flex;
+	justify-content: space-between;
+	padding: 0.4rem 0;
+}
+
+.label {
+	color: #bcbcc2;
+}
+
+.value {
+	font-weight: 600;
+}
+
+.scoreList {
+	background: #131316;
+	border: 1px solid #2b2b2f;
+	border-radius: 8px;
+	padding: 0.8rem 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.scoreItem {
+	display: flex;
+	justify-content: space-between;
+	font-size: 0.95rem;
+}
+
+.empty {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+	align-items: center;
+	text-align: center;
+	color: #d0d0d3;
+	font-size: 0.95rem;
+}

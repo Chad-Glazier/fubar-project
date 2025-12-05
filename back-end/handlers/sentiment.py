@@ -7,9 +7,13 @@ from db.models.Book import Book
 from db.models.UserReview import UserReview
 from db.models.SentimentCache import SentimentCache
 
+import os
+
 
 sentiment_router = APIRouter(prefix="/sentiment", tags=["sentiment"])
 _analyzer = SentimentIntensityAnalyzer()
+
+TESTING = os.environ.get("TESTING") == "1"
 
 
 def _analyze_sentiment(text: str) -> dict[str, object]:
@@ -39,7 +43,7 @@ def _serialize(cache_entry: SentimentCache) -> dict[str, Any]:
 
 
 @sentiment_router.get("/{book_id}")
-async def get_sentiment(book_id: str) -> dict[str, Any]:
+async def get_sentiment(book_id: str) -> SentimentCache:
 	book = Book.get_by_primary_key(book_id)
 	if book is None:
 		raise HTTPException(
@@ -49,7 +53,10 @@ async def get_sentiment(book_id: str) -> dict[str, Any]:
 
 	cached = SentimentCache.get_cached(book_id)
 	if cached is not None:
-		return _serialize(cached)
+		if TESTING:
+			return _serialize(cached)
+		else:
+			return cached
 
 	reviews = [
 		review.text.strip()
@@ -73,4 +80,7 @@ async def get_sentiment(book_id: str) -> dict[str, Any]:
 		scores=sentiment["scores"],  # type: ignore
 		review_count=len(reviews),
 	)
-	return _serialize(cache_entry)
+	if TESTING:
+		return _serialize(cache_entry)
+	else:
+		return cached

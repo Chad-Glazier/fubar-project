@@ -67,9 +67,18 @@ async function remove(bookId: string): Promise<Error | null> {
 	}
 }
 
+/**
+ * Report a post.
+ */
+async function report(reviewId: string): Promise<Error | null> {
+	// not implemented
+	return null
+}
+
 const review = {
 	create,
-	remove
+	remove,
+	report
 }
 
 export default review

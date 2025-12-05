@@ -5,15 +5,17 @@ import { useRouter } from "next/router"
 import useUser from "@/lib/hooks/useUser"
 import BookCard from "@/lib/components/BookCard"
 import Head from "next/head"
-import { Book, BookDetails, PopulatedReview } from "@/lib/server/schema"
+import { Book, BookDetails, PopulatedReview, Sentiment } from "@/lib/server/schema"
 import server from "@/lib/server"
 import PaginationControls from "@/lib/components/PaginationControls"
 import { useState } from "react"
 import ReviewSummary from "@/lib/components/ReviewSummary"
+import SentimentReport from "@/lib/components/SentimentReport"
 
 type Props = {
 	book: Book
 	reviews: PopulatedReview[]
+	sentiment: Sentiment | null
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
@@ -44,10 +46,13 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
 		})
 	}
 
+	const sentiment = await server.book.sentiment(bookId)
+
 	return {
 		props: {
 			book: bookDetails.book,
-			reviews: reviews
+			reviews: reviews,
+			sentiment
 		}
 	}
 }
@@ -55,6 +60,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
 export default function SearchResults({
 	book,
 	reviews,
+	sentiment
 }: Props) {
 	const router = useRouter()
 	const { user, setUser } = useUser()
@@ -93,6 +99,13 @@ export default function SearchResults({
 					}
 				}}
 			/>
+			{sentiment && <SentimentReport 
+				sentiment={sentiment.sentiment} 
+				score={sentiment.score} 
+				scores={sentiment.scores} 
+				reviewCount={sentiment.reviewCount}			
+			/>}
+
 			<ReviewSummary
 				reviews={reviews}
 				showUser={true}

@@ -156,7 +156,7 @@ export default function Profile({ allowedProfilePicturePaths }: Props) {
 					width={150}
 					onClick={() => setChangingProfilePic(true)}
 				/>
-				<Streak streakCount={streakCount+1} badge={streakBadge} />
+				<Streak streakCount={streakCount} badge={streakBadge} />
 				<form onSubmit={handleSubmit}>
 					<fieldset disabled={loading || !editing} style={{ border: "none", padding: 0 }}>
 						<div>
