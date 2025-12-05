@@ -6,7 +6,6 @@ from db.models.UserReview import UserReview
 from db.models.Book import Book
 from server import app
 
-
 def test_recommendations_endpoint_with_history():
     """User with history should receive recommendations (non-empty response)."""
     client = TestClient(app)

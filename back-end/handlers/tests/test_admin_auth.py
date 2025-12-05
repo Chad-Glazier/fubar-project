@@ -1,8 +1,11 @@
 from fastapi.testclient import TestClient
+from db.models.Report import Report
 from server import app
 
 from db.models.AdminUser import AdminUser
 from db.models.AuditLog import AuditLog
+from pydantic import TypeAdapter
+
 
 client = TestClient(app)
 
@@ -74,8 +77,7 @@ def test_admin_can_access_dashboard():
 
     res = client.get("/admin/dashboard")
     assert res.status_code == 200
-    assert "flagged_reviews" in res.json()
-
+    TypeAdapter(list[Report]).validate_json(res.content)
 
 # -----------------------------------------------------------
 # 4. Admin can access audit logs

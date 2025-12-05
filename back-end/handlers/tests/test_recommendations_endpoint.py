@@ -12,7 +12,6 @@ from handlers.recommendations import get_recommendations, RecommendationItem
 def _run_recommendations(user_id: str, n: int, k: int) -> list[RecommendationItem]:
     return asyncio.run(get_recommendations(user_id, n=n, k=k))
 
-
 @contextmanager
 def _temp_data_dir():
     original_book_dir = Book.data_dir

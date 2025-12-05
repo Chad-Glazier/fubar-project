@@ -5,6 +5,7 @@ import httpx
 import uuid
 import os
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 from db.persisted_model import PersistedModel
 from db.models.BookMetadataCache import BookMetadataCache

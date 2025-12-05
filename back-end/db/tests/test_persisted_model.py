@@ -260,3 +260,22 @@ def test_get_all():
 		assert instance.pk == i + 1
 
 	RandomModel._drop_table() # type: ignore
+
+def test_get_where_like():
+	instances = [
+		RandomModel(pk = 1, field_1 = "orange peel", field_2 = 1234),
+		RandomModel(pk = 2, field_1 = "papaya", field_2 = 1234),
+		RandomModel(pk = 3, field_1 = "apple", field_2 = 12345),
+		RandomModel(pk = 4, field_1 = "banana peel", field_2 = 123456),
+		RandomModel(pk = 5, field_1 = "peach,nectarine", field_2 = 1234567),
+	]
+	for instance in instances:
+		instance.put()
+
+	retrieved_instances = [instance for instance in RandomModel.get_where_like(field_1 = "peel")]
+
+	assert len(retrieved_instances) == 2
+	assert retrieved_instances[0].pk == 1
+	assert retrieved_instances[1].pk == 4
+
+	RandomModel._drop_table() # type: ignore

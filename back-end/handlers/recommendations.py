@@ -1,12 +1,12 @@
 from typing import List
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
+from db.camelized_model import CamelizedModel
 
 from db.recommend import recommend_for_user
 from db.models.Book import Book
 
 
-class RecommendationItem(BaseModel):
+class RecommendationItem(CamelizedModel):
 	book: Book | None = None
 	book_id: str | None = None
 	score: float

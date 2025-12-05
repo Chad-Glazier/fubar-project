@@ -4,6 +4,7 @@ from .search import search_router
 from .recommendations import recommend_router
 from .book_details import book_router
 from .review import review_router
+from .profile_pictures import profile_pictures_router
 from .admin import admin_router
 from .sentiment import sentiment_router
 

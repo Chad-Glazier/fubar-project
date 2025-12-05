@@ -1,13 +1,13 @@
 from fastapi import APIRouter, HTTPException, Request
 from http import HTTPStatus
-from pydantic import BaseModel
+from db.camelized_model import CamelizedModel
 
 from db.models.User import User
 from db.models.Book import Book
 from db.models.SavedBook import SavedBook
 
 
-class SavedBookAction(BaseModel):
+class SavedBookAction(CamelizedModel):
 	message: str
 
 
@@ -32,6 +32,7 @@ def save_book(book_id: str, req: Request) -> SavedBookAction:
 		raise HTTPException(status_code=404, detail="Book not found")
 
 	SavedBook.save_for_user(user.id, book_id)
+	user.record_activity()
 	return SavedBookAction(message="Book saved")
 
 

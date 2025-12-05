@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request, Response
 from http import HTTPStatus
-from pydantic import BaseModel, Field
+from pydantic import Field
+from db.camelized_model import CamelizedModel
 
 from db.models.UserReview import UserReview
 from db.models.User import User
@@ -14,7 +15,7 @@ review_router = APIRouter(prefix = "/review", tags = ["reviews"])
 # The types that will be used by this router are defined below.
 #
 
-class ReviewDetails(BaseModel):
+class ReviewDetails(CamelizedModel):
 	rating: int = Field(..., ge=0, le=10)
 	text: str = Field(default = "")
 
@@ -133,6 +134,7 @@ async def post_review(
 		text = review.text
 	)
 	new_review.put()
+	user.record_activity()
 
 	resp.status_code = HTTPStatus.CREATED
 
@@ -163,4 +165,3 @@ async def delete_review(book_id: str, req: Request):
 	)
 	if review != None:
 		review.delete()
-

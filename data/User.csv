@@ -1,1 +1,1 @@
-id,display_name,email,password
+id,display_name,email,password,profile_picture_path,current_streak,longest_streak,last_activity_date

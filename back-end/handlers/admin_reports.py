@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from http import HTTPStatus
 
+from db.camelized_model import CamelizedModel
 from db.models.User import User
 from db.models.AdminUser import AdminUser
 from db.models.Report import Report
@@ -10,11 +11,15 @@ from db.models.AuditLog import AuditLog
 
 admin_reports_router = APIRouter(prefix="/admin/reports", tags=["admin"])
 
+# ============================================================
+# BODY SCHEMAS
+# ============================================================
+
 
 # ---------------------------------------------------------
 # Helper: require admin login
 # ---------------------------------------------------------
-def require_admin(req: Request) -> User:
+def require_admin(req: Request) -> AdminUser:
     admin = AdminUser.from_session(req)
     if admin is None:
         raise HTTPException(
@@ -28,37 +33,32 @@ def require_admin(req: Request) -> User:
 # USER-FACING REPORT SUBMISSION
 # POST /admin/reports
 # ---------------------------------------------------------
+class ReportDetails(CamelizedModel):
+    review_id: str
+    reason: str
+    text: str
+    
 @admin_reports_router.post("")
-async def submit_report(data: dict, req: Request):
-    """
-    Tests expect:
-    POST /admin/reports
-    {
-        "review_id": "...",
-        "reason": "...",
-        "text": "..."
-    }
-    """
-
+async def submit_report(data: ReportDetails, req: Request) -> Report:
     user = User.from_session(req)
     if user is None:
         raise HTTPException(HTTPStatus.UNAUTHORIZED, "Login required.")
 
     # Validate review exists
-    review = UserReview.get_by_primary_key(data["review_id"])
+    review = UserReview.get_by_primary_key(data.review_id)
     if review is None:
         raise HTTPException(HTTPStatus.NOT_FOUND, "Review not found.")
 
     report = Report(
         id=Report.new_id(),
-        review_id=data["review_id"],
+        review_id=data.review_id,
         user_id=user.id,
-        reason=data.get("reason", ""),
-        text=data.get("text", ""),
+        reason=data.reason,
+        text=data.reason,
     )
     report.put()
 
-    return {"id": report.id}
+    return report
     # 200 OK — test expects this
 
 
@@ -68,7 +68,7 @@ async def submit_report(data: dict, req: Request):
 # ---------------------------------------------------------
 @admin_reports_router.get("")
 async def list_reports(req: Request):
-    admin = require_admin(req)
+    require_admin(req)
     reports = list(Report.get_all())
     return reports   # tests expect a LIST
 
@@ -92,5 +92,3 @@ async def delete_report(report_id: str, req: Request):
             admin_id=admin.id,
             target_id=report_id,
         ).put()
-
-    return {"deleted": True}  # tests expect 200 always

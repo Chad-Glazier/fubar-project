@@ -114,7 +114,7 @@ def test_admin_can_view_reports_after_login():
     assert response.status_code == 200
     reports = response.json()
     assert len(reports) == 1
-    assert reports[0]["review_id"] == "rev123"
+    assert reports[0]["reviewId"] == "rev123"
 
 
 def test_delete_report_is_idempotent():
