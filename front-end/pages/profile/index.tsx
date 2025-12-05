@@ -8,6 +8,7 @@ import { GetServerSideProps } from "next"
 import ProfilePicturePicker from "@/lib/components/ProfilePicturePicker"
 import { BasicUserInfo, PopulatedReview } from "@/lib/server/schema"
 import ReviewSummary from "@/lib/components/ReviewSummary"
+import { useRouter } from "next/router"
 
 type Props = {
 	allowedProfilePicturePaths: string[]
